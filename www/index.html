@@ -263,6 +263,38 @@ nav button{position:relative}.gear{position:relative}.gear .nb{top:-2px;right:-2
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#556;margin-right:8px}.dot.online{background:#5fd38a}.dot.away{background:#f0c35a}.dot.dnd{background:#ff6b6b}
 .mini{min-height:44px;padding:0 14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line)}
 .ntf{padding:10px 0;border-bottom:1px solid var(--line);font-size:.9rem}.ntf.un{color:var(--text);font-weight:700}.ntf small{display:block;color:var(--mute);font-weight:400}
+
+/* ===== платформа поиска ===== */
+.srcrow{max-width:1100px;width:100%;margin:auto;padding:4px 20px 0}
+.srcsw{display:flex;gap:4px;padding:3px;width:max-content;max-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:999px;position:relative}
+.srcsw::before{content:'';position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 5px);border-radius:999px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--acc);transition:transform .32s cubic-bezier(.3,.9,.3,1)}
+.srcsw[data-on=sc]::before{transform:translateX(calc(100% + 4px))}
+.srcsw button{position:relative;z-index:1;flex:1;min-width:104px;padding:7px 14px;border-radius:999px;color:var(--mute);font-weight:600;font-size:.85rem;transition:color .25s,transform .15s}
+.srcsw button.on{color:var(--text)}
+.srcsw button:active{transform:scale(.94)}
+/* ===== анимации ===== */
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes npUp{from{opacity:0;transform:translateY(70px)}to{opacity:1;transform:none}}
+@keyframes cvIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.55)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 #9b8cff00}50%{box-shadow:0 0 22px 2px #9b8cff66}}
+@keyframes tabPop{0%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:none}}
+@keyframes dlgIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+#view.vin-cards .card{animation:cardIn .42s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*28ms)}
+#view.vin-page,#h.hin{animation:pageIn .3s cubic-bezier(.2,.8,.2,1)}
+#np.on{animation:npUp .34s cubic-bezier(.2,.8,.2,1)}
+#np .cv{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+body:not(.playing) #np .cv{transform:scale(.9)}
+#npCov.swap,#cov.swap{animation:cvIn .4s cubic-bezier(.2,.8,.2,1)}
+.js-pp svg.pop{animation:pop .3s ease-out}
+body.playing .card.cur .art{animation:glow 2.4s ease-in-out infinite}
+.card{transition:background .15s,transform .15s}
+.card:active{transform:scale(.97)}
+nav button:active,.ctl button:active,.gear:active{transform:scale(.92)}
+nav button.on svg{animation:tabPop .35s}
+@media(min-width:761px){dialog[open]{animation:dlgIn .2s ease-out}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -310,6 +342,7 @@ nav button{position:relative}.gear{position:relative}.gear .nb{top:-2px;right:-2
   <button id="tFr" hidden><svg class="i"><use href="#i-users"/></svg><span>Друзья</span><b class="nb" id="frb" hidden></b></button>
   <button id="tAdm" hidden><svg class="i"><use href="#i-shield"/></svg><span>Владелец</span></button>
 </nav>
+<div class="srcrow" id="srcrow"><div class="srcsw" id="srcsw" data-on="yt"><button type="button" data-s="yt" class="on">YouTube</button><button type="button" data-s="sc">SoundCloud</button></div></div>
 <div class="chips" id="chips"></div>
 <main id="main"><div class="wrap"><h2 id="h"></h2><div id="view"></div></div></main>
 
@@ -457,9 +490,11 @@ const bases=()=>[...new Set([custom,good,...dyn,...PIPED].filter(Boolean))];
     }catch(e){}
   }
 })();
+let SRC=ls.get('src','yt');
 async function searchTracks(q){
   await linnReady;
-  if(linnOk){try{const r=await tfetch(LINN+'/search?q='+enc(q)+'&'+tq(),40000);if(r.length)return r}catch(e){if(e.status===401){sessionLost();throw new Error('сессия истекла')}}}
+  if(linnOk){try{const r=await tfetch(LINN+'/search?q='+enc(q)+'&src='+SRC+'&'+tq(),40000);if(r.length||SRC!=='yt')return r}catch(e){if(e.status===401){sessionLost();throw new Error('сессия истекла')}if(SRC!=='yt')throw e}}
+  if(SRC!=='yt')throw new Error('SoundCloud работает только через сервер LINN');
   if(ytKey){
     const d=await tfetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&videoCategoryId=10&maxResults=30&q='+enc(q)+'&key='+enc(ytKey));
     return d.items.map(i=>({id:i.id.videoId,title:decode(i.snippet.title),user:decode(i.snippet.channelTitle),thumb:i.snippet.thumbnails.high.url}));
@@ -1090,6 +1125,46 @@ async function pTools(b){
   if(!TOKEN)return showAuth();
   try{await enter(await api('/api/me'))}
   catch(e){if(e.status===401){TOKEN='';ls.set('token','');showAuth()}else showAuth(e.message)}
+})();
+</script>
+<script>
+/* платформа поиска + анимации интерфейса */
+(function(){
+  var sw=document.getElementById('srcsw'),row=document.getElementById('srcrow'),chips=document.getElementById('chips'),q=document.getElementById('q');
+  function applySrc(s,fromUser){
+    SRC=s;ls.set('src',s);sw.dataset.on=s;
+    [].forEach.call(sw.querySelectorAll('button'),function(b){b.classList.toggle('on',b.dataset.s===s)});
+    q.placeholder=s==='sc'?'Артист или трек на SoundCloud':'Артист, трек или ссылка на YouTube';
+    if(fromUser&&q.value.trim())run(q.value.trim());
+  }
+  sw.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.s!==SRC)applySrc(b.dataset.s,true)});
+  applySrc(SRC==='sc'?'sc':'yt',false);
+  var _nav=setNav;setNav=function(){_nav.apply(this,arguments);row.style.display=chips.style.display};
+  row.style.display=chips.style.display;
+
+  var view=document.getElementById('view'),hd=document.getElementById('h'),last='';
+  function restart(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+  function pageAnim(key){
+    if(key===last)return;last=key;
+    if(document.body.classList.contains('noanim'))return;
+    var cards=view.querySelectorAll('.card');
+    view.classList.remove('vin-cards','vin-page');
+    cards.forEach(function(c,i){c.style.setProperty('--i',Math.min(i,16))});
+    void view.offsetWidth;view.classList.add(cards.length?'vin-cards':'vin-page');
+    restart(hd,'hin');
+  }
+  var _draw=draw;
+  draw=function(m){_draw(m);var h=(typeof home!=='undefined'&&home)?home.q:'';pageAnim(mode+'|'+(mode==='home'?h:''))};
+  new MutationObserver(function(){if(mode==='fr'||mode==='adm')pageAnim(mode)}).observe(view,{childList:true});
+
+  ['npCov','cov'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;var prev=el.getAttribute('src');
+    new MutationObserver(function(){var s=el.getAttribute('src');if(s&&s!==prev)restart(el,'swap');prev=s}).observe(el,{attributes:true,attributeFilter:['src']});
+  });
+  function pop(){[].forEach.call(document.querySelectorAll('.js-pp svg'),function(s){restart(s,'pop')})}
+  a.addEventListener('play',function(){document.body.classList.add('playing');pop()});
+  a.addEventListener('pause',function(){document.body.classList.remove('playing');pop()});
+  a.addEventListener('ended',function(){document.body.classList.remove('playing')});
 })();
 </script>
 <script>
