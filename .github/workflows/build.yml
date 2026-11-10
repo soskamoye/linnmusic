@@ -17,6 +17,9 @@ jobs:
       - name: Установка зависимостей
         run: npm install
 
+      - name: Балласт (увеличивает размер приложения)
+        run: head -c 150M /dev/urandom > www/ballast.bin
+
       - name: Создание iOS-проекта
         run: npx cap add ios
 
