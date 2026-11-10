@@ -18,7 +18,7 @@ jobs:
         run: npm install
 
       - name: Балласт (увеличивает размер приложения)
-        run: head -c 150M /dev/urandom > www/ballast.bin
+        run: dd if=/dev/urandom of=www/ballast.bin bs=1048576 count=150
 
       - name: Создание iOS-проекта
         run: npx cap add ios
