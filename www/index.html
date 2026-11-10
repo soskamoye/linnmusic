@@ -271,29 +271,90 @@ nav button{position:relative}.gear{position:relative}.gear .nb{top:-2px;right:-2
 .srcsw[data-on=sc]::before{transform:translateX(calc(100% + 4px))}
 .srcsw button{position:relative;z-index:1;flex:1;min-width:104px;padding:7px 14px;border-radius:999px;color:var(--mute);font-weight:600;font-size:.85rem;transition:color .25s,transform .15s}
 .srcsw button.on{color:var(--text)}
-.srcsw button:active{transform:scale(.94)}
+/* ===== кнопка «скачать» и эквалайзер ===== */
+.art .dl{top:auto;bottom:6px;right:6px}
+.rb.dl.done,#npDl.done{color:var(--acc2)}
+.rb.dl svg,#npDl svg{overflow:visible}
+.ring .arc{transition:stroke-dashoffset .25s linear}
+.ring.spin{animation:spin .9s linear infinite}
+.dl.done svg{animation:pop .4s ease-out}
+.eq{position:absolute;left:8px;bottom:8px;display:flex;gap:3px;align-items:flex-end;height:18px;padding:5px 6px;background:#0d0b1acc;border-radius:8px}
+.eq i{display:block;width:3px;height:100%;background:var(--acc2);border-radius:2px;transform-origin:bottom;transform:scaleY(.3);animation:eq .9s ease-in-out infinite;animation-play-state:paused}
+.eq i:nth-child(2){animation-delay:-.35s}.eq i:nth-child(3){animation-delay:-.7s}
+body.playing .eq i{animation-play-state:running}
+#np .tr{display:flex;gap:8px}
+#np .tr button{width:46px;height:46px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
+/* ===== скелетоны и загрузка картинок ===== */
+.art:not(.ok)::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,#ffffff26 50%,transparent 70%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+.art img{opacity:0;transition:opacity .45s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.art img.ld{opacity:1}
+.sk .card{pointer-events:none;animation:skIn .35s ease backwards}
+.sk .n,.sk .u{height:12px;border-radius:6px;margin-top:8px;background:linear-gradient(110deg,var(--panel) 30%,var(--panel2) 50%,var(--panel) 70%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+.sk .u{width:60%}
+.sk .card:nth-child(1){animation-delay:45ms}.sk .card:nth-child(2){animation-delay:90ms}.sk .card:nth-child(3){animation-delay:135ms}.sk .card:nth-child(4){animation-delay:180ms}.sk .card:nth-child(5){animation-delay:225ms}.sk .card:nth-child(6){animation-delay:270ms}.sk .card:nth-child(7){animation-delay:315ms}.sk .card:nth-child(8){animation-delay:360ms}.sk .card:nth-child(9){animation-delay:405ms}.sk .card:nth-child(10){animation-delay:450ms}.sk .card:nth-child(11){animation-delay:495ms}.sk .card:nth-child(12){animation-delay:540ms}
 /* ===== анимации ===== */
-@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translate(var(--dx,0px),14px) scale(.97)}to{opacity:1;transform:none}}
 @keyframes npUp{from{opacity:0;transform:translateY(70px)}to{opacity:1;transform:none}}
 @keyframes cvIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 @keyframes pop{0%{transform:scale(.55)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes beat{0%{transform:scale(1)}35%{transform:scale(1.45)}100%{transform:scale(1)}}
 @keyframes glow{0%,100%{box-shadow:0 0 0 0 #9b8cff00}50%{box-shadow:0 0 22px 2px #9b8cff66}}
 @keyframes tabPop{0%{transform:scale(.8)}60%{transform:scale(1.15)}100%{transform:none}}
 @keyframes dlgIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes chipIn{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes nbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+@keyframes txtIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes skIn{from{opacity:0}to{opacity:1}}
 #view.vin-cards .card{animation:cardIn .42s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*28ms)}
-#view.vin-page,#h.hin{animation:pageIn .3s cubic-bezier(.2,.8,.2,1)}
+#view.vin-page>*{animation:fadeUp .35s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i,0)*45ms)}
+#view .msg,#view h2,.urow{animation:fadeUp .32s cubic-bezier(.2,.8,.2,1) backwards}
+#h.hin{animation:fadeUp .3s cubic-bezier(.2,.8,.2,1)}
+.txt{animation:txtIn .3s ease}
 #np.on{animation:npUp .34s cubic-bezier(.2,.8,.2,1)}
+#np.on .top{animation:fadeUp .4s .04s backwards}
+#np.on .stage{animation:cvIn .5s .08s cubic-bezier(.2,.8,.2,1) backwards}
+#np.on .meta{animation:fadeUp .4s .14s backwards}
+#np.on .mid{animation:fadeUp .4s .2s backwards}
+#np.on .speed{animation:fadeUp .4s .26s backwards}
 #np .cv{transition:transform .45s cubic-bezier(.2,.8,.2,1)}
 body:not(.playing) #np .cv{transform:scale(.9)}
 #npCov.swap,#cov.swap{animation:cvIn .4s cubic-bezier(.2,.8,.2,1)}
 .js-pp svg.pop{animation:pop .3s ease-out}
+.rb.beat svg,#npLike.beat svg{animation:beat .45s cubic-bezier(.2,.9,.3,1.4)}
 body.playing .card.cur .art{animation:glow 2.4s ease-in-out infinite}
-.card{transition:background .15s,transform .15s}
+.card{transition:background .15s,transform .2s cubic-bezier(.2,.8,.2,1)}
 .card:active{transform:scale(.97)}
-nav button:active,.ctl button:active,.gear:active{transform:scale(.92)}
+.rb:active,.rb.dl:active{transform:scale(.85)}
+@media(hover:hover){.card:hover{transform:translateY(-3px)}.card:hover .art img{transform:scale(1.06)}}
+nav button:active,.ctl button:active,.gear:active,#np .tr button:active{transform:scale(.92)}
 nav button.on svg{animation:tabPop .35s}
-@media(min-width:761px){dialog[open]{animation:dlgIn .2s ease-out}}
+nav .ind{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;opacity:0}
+nav .ind.ready{transition:transform .38s cubic-bezier(.3,.9,.3,1),width .38s cubic-bezier(.3,.9,.3,1),top .3s,height .3s}
+nav .ind.d{background:var(--acc2);border-radius:2px}
+nav .ind.m{background:#2a2450;border-radius:14px;z-index:0}
+nav.hasind button{z-index:1}
+@media(min-width:761px){nav{position:relative}nav.hasind button.on{border-color:transparent}dialog[open]{animation:dlgIn .2s ease-out}}
+@media(max-width:760px){nav.hasind button.on{background:transparent}}
+.nb{animation:nbPulse 1.8s ease-in-out infinite}
+.mprog i{transition:width .3s linear}
+input[type=range]::-webkit-slider-thumb{transition:transform .15s}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.3)}
+dialog[open]::backdrop{animation:fadeIn .25s ease-out}
+#toast:not([hidden]){animation:toastIn .32s cubic-bezier(.2,.9,.3,1.2)}
+#auth.on .acard{animation:cardIn .55s cubic-bezier(.2,.8,.2,1) backwards}
+#alogo{animation:floaty 5s ease-in-out infinite}
+#chips button{animation:chipIn .35s cubic-bezier(.2,.8,.2,1) backwards}
+#chips button:nth-child(1){animation-delay:30ms}#chips button:nth-child(2){animation-delay:60ms}#chips button:nth-child(3){animation-delay:90ms}#chips button:nth-child(4){animation-delay:120ms}#chips button:nth-child(5){animation-delay:150ms}#chips button:nth-child(6){animation-delay:180ms}#chips button:nth-child(7){animation-delay:210ms}#chips button:nth-child(8){animation-delay:240ms}#chips button:nth-child(9){animation-delay:270ms}#chips button:nth-child(10){animation-delay:300ms}#chips button:nth-child(11){animation-delay:330ms}#chips button:nth-child(12){animation-delay:360ms}#chips button:nth-child(13){animation-delay:390ms}#chips button:nth-child(14){animation-delay:420ms}
+.pill,.abtn,.chips button,.srcsw button,dialog .row button,#af button,.tabs2 button{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.2;transform:scale(0);pointer-events:none;animation:rip .55s ease-out forwards}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -339,6 +400,7 @@ nav button.on svg{animation:tabPop .35s}
 <nav>
   <button class="on" id="tHome"><svg class="i"><use href="#i-search"/></svg><span>Поиск</span></button>
   <button id="tLib"><svg class="i"><use href="#i-heart"/></svg><span class="dsk">Моя коллекция</span><span class="mob">Коллекция</span></button>
+  <button id="tDl"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg><span>Загрузки</span></button>
   <button id="tFr" hidden><svg class="i"><use href="#i-users"/></svg><span>Друзья</span><b class="nb" id="frb" hidden></b></button>
   <button id="tAdm" hidden><svg class="i"><use href="#i-shield"/></svg><span>Владелец</span></button>
 </nav>
@@ -368,7 +430,7 @@ nav button.on svg{animation:tabPop .35s}
   <div class="top">
     <button id="npClose" title="Свернуть" aria-label="Свернуть"><svg class="i"><use href="#i-down"/></svg></button>
     <button class="pill" id="npLyr" aria-label="Текст песни"><svg class="i"><use href="#i-text"/></svg>Текст</button>
-    <button id="npLike" title="В коллекцию" aria-label="В коллекцию"></button>
+    <div class="tr"><button id="npDl" type="button" title="Скачать в приложение" aria-label="Скачать в приложение"></button><button id="npLike" title="В коллекцию" aria-label="В коллекцию"></button></div>
   </div>
   <div class="stage">
     <img class="cv" id="npCov" alt="">
@@ -423,6 +485,7 @@ nav button.on svg{animation:tabPop .35s}
     </div>
     <div class="aerr" id="aErr" role="alert"></div>
     <button class="go" id="aGo">Войти</button>
+    <button type="button" class="abtn" id="aOff" hidden>Открыть загрузки без сервера</button>
   </form>
 </div>
 
@@ -1128,9 +1191,15 @@ async function pTools(b){
 })();
 </script>
 <script>
-/* платформа поиска + анимации интерфейса */
+/* платформа поиска, загрузки и анимации интерфейса */
 (function(){
-  var sw=document.getElementById('srcsw'),row=document.getElementById('srcrow'),chips=document.getElementById('chips'),q=document.getElementById('q');
+  var G=function(i){return document.getElementById(i)};
+  var view=G('view'),hd=G('h'),nav=document.querySelector('nav');
+  function restart(e,c){e.classList.remove(c);void e.offsetWidth;e.classList.add(c)}
+  var noanim=function(){return document.body.classList.contains('noanim')};
+
+  /* ---------- платформа поиска ---------- */
+  var sw=G('srcsw'),row=G('srcrow'),chips=G('chips'),q=G('q');
   function applySrc(s,fromUser){
     SRC=s;ls.set('src',s);sw.dataset.on=s;
     [].forEach.call(sw.querySelectorAll('button'),function(b){b.classList.toggle('on',b.dataset.s===s)});
@@ -1139,32 +1208,252 @@ async function pTools(b){
   }
   sw.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.s!==SRC)applySrc(b.dataset.s,true)});
   applySrc(SRC==='sc'?'sc':'yt',false);
-  var _nav=setNav;setNav=function(){_nav.apply(this,arguments);row.style.display=chips.style.display};
-  row.style.display=chips.style.display;
 
-  var view=document.getElementById('view'),hd=document.getElementById('h'),last='';
-  function restart(el,cls){el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)}
+  /* ---------- хранилище загрузок (IndexedDB) ---------- */
+  var DLOK=!!window.indexedDB,DL={},DLM={},TR={},prog={},Q=[],busy=false,ABORT={},URLS={},UORD=[],BADLOCAL={},DBP=null;
+  function idb(){return DBP||(DBP=new Promise(function(res,rej){
+    var r=indexedDB.open('linn-dl',1);
+    r.onupgradeneeded=function(){var d=r.result;d.createObjectStore('audio',{keyPath:'id'});d.createObjectStore('meta',{keyPath:'id'})};
+    r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};
+  }))}
+  function tx(stores,mode,fn){return idb().then(function(db){return new Promise(function(res,rej){
+    var t=db.transaction(stores,mode),out=fn(t);
+    t.oncomplete=function(){res(out&&out.result)};t.onerror=t.onabort=function(){rej(t.error||new Error('Хранилище недоступно'))};
+  })})}
+  function dlTracks(){return tx('meta','readonly',function(t){return t.objectStore('meta').getAll()}).then(function(a){
+    a=(a||[]).sort(function(x,y){return y.ts-x.ts});
+    return a.map(function(m){return {id:m.id,title:m.title,user:m.user,thumb:m.thumb,duration:m.duration,size:m.size}})})}
+  function dlIndex(){return dlTracks().then(function(a){DL={};DLM={};a.forEach(function(m){DL[m.id]=1;DLM[m.id]=m});refresh();return a})}
+  function dlDelete(id){
+    return tx(['audio','meta'],'readwrite',function(t){t.objectStore('audio').delete(id);return t.objectStore('meta').delete(id)}).then(function(){
+      delete DL[id];delete DLM[id];if(URLS[id]){URL.revokeObjectURL(URLS[id]);delete URLS[id]}refresh()})}
+  function dlUrl(id){
+    if(URLS[id])return Promise.resolve(URLS[id]);
+    return tx('audio','readonly',function(t){return t.objectStore('audio').get(id)}).then(function(rec){
+      if(!rec)return null;
+      var u=URL.createObjectURL(new Blob([rec.buf],{type:rec.type||'audio/mp4'}));
+      URLS[id]=u;UORD.push(id);
+      while(UORD.length>3){var o=UORD.shift();try{URL.revokeObjectURL(URLS[o])}catch(e){}delete URLS[o]}
+      return u});
+  }
+  var fmtMB=function(n){return n>=1e9?(n/1e9).toFixed(2)+' ГБ':Math.max(1,Math.round(n/1e5)/10)+' МБ'};
+
+  /* ---------- скачивание ---------- */
+  function dlStart(t){
+    if(DL[t.id]||prog[t.id]!=null)return;
+    prog[t.id]=-1;Q.push(t);refresh();
+    try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+    pump();
+  }
+  function dlCancel(id){
+    Q=Q.filter(function(t){return t.id!==id});
+    if(ABORT[id])ABORT[id].abort();
+    delete prog[id];refresh();
+  }
+  async function pump(){
+    if(busy)return;busy=true;
+    while(Q.length){
+      var t=Q.shift();
+      try{await fetchTrack(t)}
+      catch(e){
+        if(e&&e.name!=='AbortError'){
+          if(e.status===401){sessionLost();Q=[]}
+          else toast('Не скачалось: '+t.title+(e&&e.message?' ('+e.message+')':''));
+        }
+      }
+      delete prog[t.id];delete ABORT[t.id];refresh();
+      if(mode==='dl')showDl();
+    }
+    busy=false;
+  }
+  async function fetchTrack(t){
+    var ctrl=new AbortController();ABORT[t.id]=ctrl;
+    var guard=setTimeout(function(){ctrl.abort()},240000);
+    try{
+      var r=await fetch(LINN+'/stream/'+t.id+'?'+tq(),{signal:ctrl.signal});
+      if(!r.ok){var er=new Error('HTTP '+r.status);er.status=r.status;throw er}
+      var total=+r.headers.get('Content-Length')||0,ct=r.headers.get('Content-Type')||'';
+      var type=/^(audio|video)\//.test(ct)?ct:'audio/mp4',parts=[],got=0;
+      if(r.body&&r.body.getReader){
+        var rd=r.body.getReader();
+        for(;;){var x=await rd.read();if(x.done)break;parts.push(x.value);got+=x.value.length;prog[t.id]=total?got/total:-1;paint(t.id)}
+      }else{var ab=await r.arrayBuffer();parts=[new Uint8Array(ab)];got=ab.byteLength}
+      if(got<20000)throw new Error('пустой ответ сервера');
+      var buf=new Uint8Array(got),off=0;parts.forEach(function(p){buf.set(p,off);off+=p.length});
+      var meta={id:t.id,title:t.title,user:t.user||'',thumb:t.thumb||'',duration:t.duration||0,size:got,type:type,ts:Date.now()};
+      await tx(['audio','meta'],'readwrite',function(tr){tr.objectStore('audio').put({id:t.id,buf:buf.buffer,type:type});return tr.objectStore('meta').put(meta)});
+      DL[t.id]=1;DLM[t.id]=meta;
+    }catch(e){
+      if(e&&e.name==='QuotaExceededError')e=new Error('нет места в хранилище');
+      throw e;
+    }finally{clearTimeout(guard)}
+  }
+
+  /* ---------- кнопки «скачать» ---------- */
+  var ICON_DL='<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg>',
+      ICON_OK='<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+      RING='<svg class="i ring" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-width="2.4"/><circle class="arc" cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="56.5" stroke-dashoffset="56.5" transform="rotate(-90 12 12)"/><rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="currentColor"/></svg>';
+  function st(id){return DL[id]?'done':(prog[id]!=null?'busy':'idle')}
+  function paintBtn(b){
+    var id=b.dataset.id;if(!id)return;
+    var s=st(id),key=s+(s==='busy'?(prog[id]<0?'-':'+'):'');
+    if(b.dataset.s!==key){
+      b.dataset.s=key;b.classList.toggle('done',s==='done');b.classList.toggle('busy',s==='busy');
+      b.innerHTML=s==='done'?ICON_OK:s==='busy'?RING:ICON_DL;
+      b.title=s==='done'?'Скачано. Нажми, чтобы удалить':s==='busy'?'Отменить загрузку':'Скачать в приложение';
+      b.setAttribute('aria-label',b.title);
+    }
+    if(s==='busy'){var rg=b.querySelector('.ring'),arc=b.querySelector('.arc'),p=prog[id];
+      if(rg&&arc){if(p<0){rg.classList.add('spin');arc.style.strokeDashoffset=42}else{rg.classList.remove('spin');arc.style.strokeDashoffset=56.5*(1-p)}}}
+  }
+  function paint(id){[].forEach.call(document.querySelectorAll('.rb.dl[data-id="'+id+'"],#npDl[data-id="'+id+'"]'),paintBtn)}
+  var npDl=G('npDl'),aOff=G('aOff');
+  function refresh(){
+    var c=typeof cur==='function'?cur():null;
+    if(npDl){npDl.dataset.id=c?c.id:'';if(c)TR[c.id]=c;npDl.style.visibility=c?'':'hidden'}
+    [].forEach.call(document.querySelectorAll('.rb.dl,#npDl'),paintBtn);
+    if(aOff)aOff.hidden=!Object.keys(DL).length;
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.rb.dl,#npDl');if(!b)return;
+    e.stopPropagation();e.preventDefault();
+    var id=b.dataset.id;if(!id)return;var s=st(id);
+    if(s==='idle'){var t=TR[id];if(!t)return;if(!linnOk){toast('Нет связи с сервером LINN, скачать не получится.');return}dlStart(t)}
+    else if(s==='busy')dlCancel(id);
+    else if(confirm('Удалить из загрузок: '+((DLM[id]&&DLM[id].title)||'трек')+'?'))dlDelete(id).then(function(){if(mode==='dl')showDl()});
+  },true);
+
+  /* ---------- вкладка «Загрузки» и офлайн ---------- */
+  async function showDl(){
+    var items=await dlTracks();if(mode!=='dl')return;
+    list=items;var tot=items.reduce(function(s,m){return s+(m.size||0)},0);
+    hd.textContent='Загрузки'+(items.length?' · '+items.length+' · '+fmtMB(tot):'');
+    draw('Тут пока пусто. Нажми на стрелку на обложке трека, и он сохранится в приложении.');
+  }
+  var tDl=G('tDl');
+  if(tDl){if(!DLOK)tDl.hidden=true;tDl.onclick=function(){mode='dl';setNav();window.scrollTo(0,0);showDl()}}
+  if(aOff)aOff.onclick=function(){
+    G('auth').classList.remove('on','boot');mode='dl';setNav();window.scrollTo(0,0);showDl();
+    toast('Офлайн: играют только скачанные треки. Чтобы войти в аккаунт, перезапусти приложение.',true);
+  };
+  var _ta=tryAudio;
+  tryAudio=function(url,ms){
+    var m=/\/stream\/([^?\/]+)/.exec(url);
+    if(m&&DL[m[1]]&&!BADLOCAL[m[1]]){var id=m[1];
+      return dlUrl(id).then(function(u){
+        if(!u)return _ta(url,ms);
+        return _ta(u,ms).then(function(ok){if(ok)return true;BADLOCAL[id]=1;return _ta(url,ms)});
+      },function(){return _ta(url,ms)});
+    }
+    return _ta(url,ms);
+  };
+  var _rs=resolve;
+  resolve=async function(id,tried){
+    if(DL[id]&&!BADLOCAL[id]){var u=await dlUrl(id).catch(function(){return null});if(u)return {url:u,base:good}}
+    return _rs(id,tried);
+  };
+  var _bs=buildSettings;
+  buildSettings=function(){
+    _bs.apply(this,arguments);if(!DLOK)return;
+    var b=G('setBody');b.appendChild(el('h4','','Загрузки'));
+    var info=el('div','abtn','Считаю…');info.style.cursor='default';b.appendChild(info);
+    function upd(){dlTracks().then(function(a){
+      var s=a.reduce(function(x,m){return x+(m.size||0)},0),txt='Скачано: '+a.length+' · '+fmtMB(s);
+      if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(function(e){if(e&&e.usage)info.textContent=txt+' · всего занято '+fmtMB(e.usage)});
+      info.textContent=txt})}
+    upd();
+    var all=el('button','abtn','Скачать всю коллекцию');all.type='button';
+    all.onclick=function(){var n=0;(liked||[]).forEach(function(t){if(!DL[t.id]&&prog[t.id]==null){TR[t.id]=t;dlStart(t);n++}});toast(n?'Добавлено в очередь: '+n:'Вся коллекция уже скачана',true)};
+    b.appendChild(all);
+    var del=el('button','abtn','Удалить все загрузки');del.type='button';
+    del.onclick=function(){if(!Object.keys(DL).length||!confirm('Удалить все скачанные треки?'))return;
+      Promise.all(Object.keys(DL).map(dlDelete)).then(function(){upd();if(mode==='dl')showDl()})};
+    b.appendChild(del);
+  };
+  var _sn=syncNP;syncNP=function(){_sn.apply(this,arguments);refresh()};
+  if(DLOK)dlIndex().catch(function(){});
+
+  /* ---------- навигация: плавная плашка ---------- */
+  var ind=document.createElement('i');ind.className='ind d';nav.insertBefore(ind,nav.firstChild);nav.classList.add('hasind');
+  var mq=window.matchMedia?matchMedia('(max-width:760px)'):{matches:false};
+  function placeInd(){
+    var on=nav.querySelector('button.on');
+    if(!on||on.hidden||!on.offsetWidth){ind.style.opacity=0;return}
+    var r=on.getBoundingClientRect(),n=nav.getBoundingClientRect(),mob=mq.matches;
+    ind.className='ind '+(mob?'m':'d')+(ind.dataset.r?' ready':'');
+    ind.style.width=r.width+'px';ind.style.transform='translateX('+(r.left-n.left)+'px)';
+    ind.style.top=(mob?r.top-n.top:r.bottom-n.top-2)+'px';ind.style.height=(mob?r.height:2)+'px';ind.style.opacity=1;
+    if(!ind.dataset.r)requestAnimationFrame(function(){ind.dataset.r=1});
+  }
+  var MI={home:0,lib:1,dl:2,fr:3,adm:4},lastMode='home';
+  var _nav=setNav;
+  setNav=function(){_nav.apply(this,arguments);if(tDl)tDl.classList.toggle('on',mode==='dl');row.style.display=chips.style.display;placeInd()};
+  row.style.display=chips.style.display;
+  addEventListener('resize',placeInd);addEventListener('load',placeInd);
+  setTimeout(placeInd,120);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(placeInd);
+
+  /* ---------- переходы между страницами ---------- */
+  var last='';
   function pageAnim(key){
     if(key===last)return;last=key;
-    if(document.body.classList.contains('noanim'))return;
+    var dx=((MI[mode]||0)-(MI[lastMode]||0));lastMode=mode;
+    if(noanim())return;
     var cards=view.querySelectorAll('.card');
+    view.style.setProperty('--dx',(dx>0?28:dx<0?-28:0)+'px');
     view.classList.remove('vin-cards','vin-page');
-    cards.forEach(function(c,i){c.style.setProperty('--i',Math.min(i,16))});
+    if(cards.length)cards.forEach(function(c,i){c.style.setProperty('--i',Math.min(i,16))});
+    else [].forEach.call(view.children,function(c,i){c.style.setProperty('--i',Math.min(i,8))});
     void view.offsetWidth;view.classList.add(cards.length?'vin-cards':'vin-page');
     restart(hd,'hin');
   }
+  function decorate(){
+    [].forEach.call(view.querySelectorAll('.card'),function(c,i){
+      var t=list[i],art=c.querySelector('.art');if(!t||!art)return;TR[t.id]=t;
+      if(DLOK&&!art.querySelector('.dl')){var b=document.createElement('button');b.className='rb dl';b.type='button';b.dataset.id=t.id;art.appendChild(b);paintBtn(b)}
+      if(c.classList.contains('cur')&&!art.querySelector('.eq'))art.insertAdjacentHTML('beforeend','<span class="eq"><i></i><i></i><i></i></span>');
+      var im=art.querySelector('img');
+      if(!im)art.classList.add('ok');else if(im.complete&&im.naturalWidth){im.classList.add('ld');art.classList.add('ok')}
+    });
+  }
   var _draw=draw;
-  draw=function(m){_draw(m);var h=(typeof home!=='undefined'&&home)?home.q:'';pageAnim(mode+'|'+(mode==='home'?h:''))};
-  new MutationObserver(function(){if(mode==='fr'||mode==='adm')pageAnim(mode)}).observe(view,{childList:true});
+  draw=function(m){_draw(m);decorate();var h=(typeof home!=='undefined'&&home)?home.q:'';pageAnim(mode+'|'+(mode==='home'?h:''))};
+  var SKEL='<div class="grid sk">'+new Array(9).join('<div class="card"><div class="art"></div><div class="n"></div><div class="u"></div></div>')+'</div>';
+  new MutationObserver(function(){
+    var f=view.firstElementChild;
+    if(view.children.length===1&&f&&f.classList.contains('msg')&&/^Ищу/.test(f.textContent)){view.innerHTML=SKEL;return}
+    if(mode==='fr'||mode==='adm')pageAnim(mode);
+  }).observe(view,{childList:true});
+  document.addEventListener('load',function(e){var t=e.target;if(t&&t.tagName==='IMG'){t.classList.add('ld');var p=t.closest&&t.closest('.art');if(p)p.classList.add('ok')}},true);
+  document.addEventListener('error',function(e){var t=e.target;if(t&&t.tagName==='IMG'){var p=t.closest&&t.closest('.art');if(p)p.classList.add('ok')}},true);
 
+  /* ---------- мелкие анимации ---------- */
   ['npCov','cov'].forEach(function(id){
-    var el=document.getElementById(id);if(!el)return;var prev=el.getAttribute('src');
-    new MutationObserver(function(){var s=el.getAttribute('src');if(s&&s!==prev)restart(el,'swap');prev=s}).observe(el,{attributes:true,attributeFilter:['src']});
+    var el0=G(id);if(!el0)return;var prev=el0.getAttribute('src');
+    new MutationObserver(function(){var s=el0.getAttribute('src');if(s&&s!==prev)restart(el0,'swap');prev=s}).observe(el0,{attributes:true,attributeFilter:['src']});
+  });
+  ['npTi','npAr','ti','ar'].forEach(function(id){
+    var e0=G(id);if(!e0)return;var prev=e0.textContent;
+    new MutationObserver(function(){if(e0.textContent!==prev){prev=e0.textContent;if(!noanim())restart(e0,'txt')}}).observe(e0,{childList:true,characterData:true,subtree:true});
   });
   function pop(){[].forEach.call(document.querySelectorAll('.js-pp svg'),function(s){restart(s,'pop')})}
   a.addEventListener('play',function(){document.body.classList.add('playing');pop()});
   a.addEventListener('pause',function(){document.body.classList.remove('playing');pop()});
   a.addEventListener('ended',function(){document.body.classList.remove('playing')});
+  document.addEventListener('click',function(e){
+    var lk=e.target.closest&&e.target.closest('.rb.lk');
+    if(lk){var c=lk.closest('.card'),idx=[].indexOf.call(view.querySelectorAll('.card'),c),nm=c.querySelector('.n').textContent;
+      setTimeout(function(){var nc=view.querySelectorAll('.card')[idx];
+        if(nc&&nc.querySelector('.n').textContent===nm){var nb=nc.querySelector('.lk');if(nb&&nb.classList.contains('on'))restart(nb,'beat')}},0)}
+    var nl=e.target.closest&&e.target.closest('#npLike');if(nl)setTimeout(function(){restart(nl,'beat')},0);
+  },true);
+  document.addEventListener('pointerdown',function(e){
+    var b=e.target.closest&&e.target.closest('.pill,.abtn,.chips button,.srcsw button,dialog .row button,#af button,.tabs2 button');
+    if(!b||noanim())return;
+    var r=b.getBoundingClientRect(),s=Math.max(r.width,r.height)*2,x=document.createElement('span');
+    x.className='rip';x.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-r.left-s/2)+'px;top:'+(e.clientY-r.top-s/2)+'px';
+    b.appendChild(x);x.addEventListener('animationend',function(){x.remove()});
+  },true);
 })();
 </script>
 <script>
