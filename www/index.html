@@ -2043,7 +2043,7 @@ async function pTools(b){
 (function(){
   var i=document.getElementById('aSrv');if(!i)return;
   var norm=function(v){v=(v||'').trim().replace(/\/+$/,'');if(v&&!/^https?:\/\//i.test(v))v='https://'+v;return v};
-  i.value=(typeof LINN==='string'&&/^https?:/i.test(LINN))?LINN:'';
+  i.value=(typeof LINN==='string'&&/^https?:/i.test(LINN)&&!/^https?:\/\/localhost\/?$/i.test(LINN))?LINN:'';
   i.addEventListener('input',function(){var v=norm(i.value);if(v){ls.set('linn',v);LINN=v}});
   var tg=document.getElementById('aTg');
   if(tg){tg.value=(window.LINN_SYNC&&window.LINN_SYNC.chan())?'@'+window.LINN_SYNC.chan():'';
