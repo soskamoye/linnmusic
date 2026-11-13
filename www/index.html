@@ -525,7 +525,7 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
   <polygon points="30.5,34.2 65.5,13.7 65.5,64.1 56.8,69.2 56.8,33 40.3,42.5 40.3,70 30.5,70" fill="url(#gN)"/>
   <ellipse cx="24.4" cy="72.5" rx="11" ry="8" transform="rotate(-35 24.4 72.5)" fill="url(#gH)"/>
 </svg><span>LINN<i>music</i></span></div>
-  <form class="search" id="sf"><input id="q" placeholder="Артист, трек или ссылка на YouTube" autocomplete="off" enterkeyhint="search" autocapitalize="none"><button>Найти</button></form>
+  <form class="search" id="sf"><input id="q" placeholder="Артист или трек на SoundCloud" autocomplete="off" enterkeyhint="search" autocapitalize="none"><button>Найти</button></form>
   <button class="gear" id="gear" title="Настройки" aria-label="Настройки"><svg class="i"><use href="#i-gear"/></svg></button>
   <button class="gear" id="bell" title="Уведомления" aria-label="Уведомления" hidden><svg class="i"><use href="#i-bell"/></svg><b class="nb" id="bdg" hidden></b></button>
   <button class="gear" id="me" title="Аккаунт" aria-label="Аккаунт" hidden></button>
@@ -537,7 +537,7 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
   <button id="tFr" hidden><svg class="i"><use href="#i-users"/></svg><span>Друзья</span><b class="nb" id="frb" hidden></b></button>
   <button id="tAdm" hidden><svg class="i"><use href="#i-shield"/></svg><span>Владелец</span></button>
 </nav>
-<div class="srcrow" id="srcrow"><div class="srcsw" id="srcsw" data-on="yt"><button type="button" data-s="yt" class="on">YouTube</button><button type="button" data-s="sc">SoundCloud</button></div></div>
+<div class="srcrow" id="srcrow"><span>SoundCloud</span></div>
 <div class="chips" id="chips"></div>
 <main id="main"><div class="wrap"><h2 id="h"></h2><div id="view"></div></div></main>
 
@@ -649,9 +649,8 @@ const $=id=>document.getElementById(id), $$=s=>document.querySelectorAll(s), a=$
 const ls={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const ic=n=>'<svg class="i"><use href="#i-'+n+'"/></svg>';
 const enc=encodeURIComponent;
-const PIPED=['https://pipedapi.kavin.rocks','https://api.piped.private.coffee','https://pipedapi.leptons.xyz','https://piped-api.lunar.icu','https://pipedapi.r4fo.com','https://piped-api.codespace.cz','https://api.piped.yt'];
 const QUICK=['Каспийский Груз','Баста','Скриптонит','Моргенштерн','Miyagi','ЛСП','Каста','Oxxxymiron','Zivert','Макс Корж','Дора','Элджей'];
-let ytKey=ls.get('ytkey',''), custom=ls.get('piped','https://pipedapi.kavin.rocks'), good='', fx={}, list=[], liked=[], queue=[], qi=-1, mode='home', shuffle=false, repeat=false, seeking=false, tok=0, editing=null, TOKEN=ls.get('token',''), ME=null, authMode='in', dirty=false, saveT, toastT, home={q:'',list:[]};
+let good='', fx={}, list=[], liked=[], queue=[], qi=-1, mode='home', shuffle=false, repeat=false, seeking=false, tok=0, editing=null, TOKEN=ls.get('token',''), ME=null, authMode='in', dirty=false, saveT, toastT, home={q:'',list:[]};
 let RMIN=.5,RMAX=2,SRV={},sleepT,sleepMin=0;
 const PDEF={autonext:true,hotkeys:true,restore:false,vol:80,accent:'#9b8cff',grid:165,lsize:1.28,autolyr:false,quick:true,hist:true,sort:'new',anim:true,badge:true,showid:false};
 let P={...PDEF,...ls.get('prefs',{})};
@@ -662,7 +661,7 @@ const isLiked=t=>liked.some(x=>x.id===t.id);
 const decode=s=>{const e=document.createElement('textarea');e.innerHTML=s;return e.value};
 const cur=()=>queue[qi];
 function toast(m,ok){const t=$('toast');t.className=ok?'ok':'';t.textContent=ok?m:m+' (нажми, чтобы скрыть)';t.hidden=false;t.onclick=()=>t.hidden=true;clearTimeout(toastT);if(ok)toastT=setTimeout(()=>t.hidden=true,2500)}
-const hint=e=>/not a bot|Sign in/i.test(e)?'YouTube просит подтвердить, что ты не бот.':/format|challenge|runtime|signature|JS/i.test(e)?'Скорее всего, yt-dlp не хватает Deno: закрой окно сервера и запусти start.bat заново.':'';
+const hint=e=>'Проверь доступность трека SoundCloud и соединение сервера.';
 function fillRange(el){el.style.setProperty('--p',((+el.value-+el.min)/((+el.max-+el.min)||1)*100)+'%')}
 // скорость трека: число 0.5–2 (старые значения "slow"/"fast" из прошлых версий переводим)
 const rateOf=id=>{const v=fx[id];if(v==='slow')return .7;if(v==='fast')return 1.5;const n=+v;return n>=RMIN&&n<=RMAX?n:1};
@@ -680,55 +679,15 @@ async function pingLinn(){try{SRV=await tfetch(LINN+'/ping',2500)||{};linnOk=tru
 linnReady=pingLinn();
 function showSrv(){const b=$('ann');b.hidden=!SRV.announce;b.textContent=SRV.announce||'';$('aInviteW').hidden=!SRV.invite}
 linnReady.then(showSrv);
-let dyn=[];
-const bases=()=>[...new Set([custom,good,...dyn,...PIPED].filter(Boolean))];
-(async()=>{
-  const urls=['https://piped-instances.kavin.rocks/','https://raw.githubusercontent.com/jayxdcode/piped-instances/main/public/minimal.json'];
-  for(const u of urls){
-    try{
-      const d=await tfetch(u,6000),arr=Array.isArray(d)?d:(d.instances||[]);
-      dyn.push(...arr.map(x=>x.api_url).filter(x=>typeof x==='string'&&x.startsWith('http')).map(x=>x.replace(/\/+$/,'')));
-    }catch(e){}
-  }
-})();
-let SRC=ls.get('src','yt');
+const isSoundCloud=t=>!!t&&/^sc-[0-9]{1,15}$/.test(t.id);
+let SRC='sc';ls.set('src','sc');
 async function searchTracks(q){
   await linnReady;
-  if(linnOk){try{const r=await tfetch(LINN+'/search?q='+enc(q)+'&src='+SRC+'&'+tq(),40000);if(r.length||SRC!=='yt')return r}catch(e){if(e.status===401){sessionLost();throw new Error('сессия истекла')}if(SRC!=='yt')throw e}}
-  if(SRC!=='yt')throw new Error('SoundCloud работает только через сервер LINN');
-  if(ytKey){
-    const d=await tfetch('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&videoCategoryId=10&maxResults=30&q='+enc(q)+'&key='+enc(ytKey));
-    return d.items.map(i=>({id:i.id.videoId,title:decode(i.snippet.title),user:decode(i.snippet.channelTitle),thumb:i.snippet.thumbnails.high.url}));
-  }
-  for(const b of bases()){
-    for(const f of ['music_songs','videos']){
-      try{
-        const d=await tfetch(b+'/search?q='+enc(q)+'&filter='+f);
-        const items=(d.items||[]).filter(i=>i.url&&i.url.includes('v=')).map(i=>({id:i.url.split('v=')[1].split('&')[0],title:i.title,user:i.uploaderName||'',thumb:i.thumbnail}));
-        if(items.length){good=b;return items}
-      }catch(e){break}
-    }
-  }
-  throw new Error('поисковые сервера не отвечают');
+  if(!linnOk)throw new Error('Нет связи с сервером LINN');
+  try{return (await tfetch(LINN+'/search?q='+enc(q)+'&src=sc&'+tq(),40000)).filter(isSoundCloud)}
+  catch(e){if(e.status===401)sessionLost();throw e}
 }
-async function streamFrom(b,id){
-  const d=await tfetch(b+'/streams/'+id,8000);
-  const s=(d.audioStreams||[]).filter(x=>x.url);
-  if(!s.length)throw new Error('no audio');
-  const m4=s.filter(x=>/mp4/.test(x.mimeType||''));
-  const p=(m4.length?m4:s).sort((x,y)=>(y.bitrate||0)-(x.bitrate||0))[0];
-  let u=p.url;
-  if(d.proxyUrl){try{const x=new URL(u),h=new URL(d.proxyUrl).host;if(x.host!==h&&!x.searchParams.has('host')){x.searchParams.set('host',x.host);x.host=h;u=x.toString()}}catch(e){}}
-  return {url:u,base:b};
-}
-async function resolve(id,tried){
-  const list=bases().filter(b=>!tried.has(b));
-  for(let i=0;i<list.length;i+=3){
-    const batch=list.slice(i,i+3);
-    try{return await Promise.any(batch.map(b=>streamFrom(b,id).catch(e=>{tried.add(b);throw e})))}catch(e){}
-  }
-  throw new Error('нет ответа от серверов');
-}
+async function resolve(id,tried){throw new Error('SoundCloud: сервер недоступен или трек не удалось загрузить')}
 function tryAudio(url,ms=12000){
   return new Promise(res=>{
     let done=false,to;
@@ -740,25 +699,20 @@ function tryAudio(url,ms=12000){
     a.src=url;applyFx();a.load();
   });
 }
-function ytId(s){const m=s.match(/(?:youtu\.be\/|v=|\/shorts\/|\/embed\/)([\w-]{11})/);return m?m[1]:/^[\w-]{11}$/.test(s)?s:null}
+let searchToken=0;
 async function run(q){
-  if(P.hist&&!ytId(q)){ls.set('hist',[q,...ls.get('hist',[]).filter(x=>x!==q)].slice(0,8));drawChips()}
-  mode='home';setNav();$('h').textContent='Результаты: '+q;$('view').innerHTML='<p class="msg">Ищу…</p>';
-  const id=ytId(q);
-  if(id){
-    const t={id,title:'Трек по ссылке',user:'YouTube',thumb:'https://i.ytimg.com/vi/'+id+'/hqdefault.jpg'};
-    try{const o=await tfetch('https://www.youtube.com/oembed?format=json&url='+enc('https://www.youtube.com/watch?v='+id));t.title=o.title;t.user=o.author_name}catch(e){}
-    list=[t];home={q,list};draw();play(list,0);return;
-  }
-  try{list=await searchTracks(q);home={q,list};draw('Ничего не нашлось. Попробуй другой запрос.')}
-  catch(e){$('view').innerHTML='<p class="msg"><b>Поиск не сработал</b> ('+e.message+').<br>Открой настройки (шестерёнка вверху) и вставь адрес другого сервера Piped или ключ YouTube Data API. Ссылку на трек с YouTube можно вставить в строку поиска.</p>'}
+  const request=++searchToken;
+  if(P.hist){ls.set('hist',[q,...ls.get('hist',[]).filter(x=>x!==q)].slice(0,8));drawChips()}
+  mode='home';setNav();$('h').textContent='Результаты: '+q;$('view').textContent='Ищу в SoundCloud…';
+  try{const found=await searchTracks(q);if(request!==searchToken||mode!=='home')return;list=found;home={q,list};draw('Ничего не нашлось. Попробуй другой запрос.')}
+  catch(e){if(request!==searchToken||mode!=='home')return;$('view').textContent='Поиск SoundCloud не сработал. Проверь адрес и соединение сервера. '+e.message}
 }
 $('sf').onsubmit=e=>{e.preventDefault();const q=$('q').value.trim();$('q').blur();if(q)run(q)};
 function drawChips(){const c=$('chips');c.innerHTML='';[...(P.hist?ls.get('hist',[]):[]),...QUICK].forEach(n=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{$('q').value=n;run(n)};c.appendChild(b)})}
 drawChips();
 
 /* ---------- вкладки и список ---------- */
-const sortedLib=()=>{const l=liked.slice();if(P.sort==='old')return l.reverse();if(P.sort==='title')return l.sort((x,y)=>x.title.localeCompare(y.title));if(P.sort==='artist')return l.sort((x,y)=>(x.user||'').localeCompare(y.user||''));return l};
+const sortedLib=()=>{const l=liked.filter(isSoundCloud);if(P.sort==='old')return l.reverse();if(P.sort==='title')return l.sort((x,y)=>x.title.localeCompare(y.title));if(P.sort==='artist')return l.sort((x,y)=>(x.user||'').localeCompare(y.user||''));return l};
 const HINT='Введи артиста или название. Или выбери исполнителя сверху.';
 function setNav(){$('tHome').classList.toggle('on',mode==='home');$('tLib').classList.toggle('on',mode==='lib');$('tAdm').classList.toggle('on',mode==='adm');$('tFr').classList.toggle('on',mode==='fr');$('chips').style.display=mode==='home'&&P.quick?'':'none'}
 $('tHome').onclick=()=>{
@@ -845,7 +799,7 @@ async function play(l,i){
       if(!ok){try{await tfetch(LINN+'/resolve/'+t.id+'?'+tq(),60000)}catch(e){if(e.status===401){sessionLost();return}toast('Сервер LINN не смог взять звук. '+hint(String(e.message))+' Подробности в чёрном окне сервера.')}}
     }
     const tried=new Set();
-    for(let n=0;n<5&&!ok;n++){
+    for(let n=0;n<1&&!ok;n++){
       const r=await resolve(t.id,tried);if(my!==tok)return;
       ok=await tryAudio(r.url);if(my!==tok)return;
       if(ok)good=r.base;else tried.add(r.base);
@@ -1045,16 +999,17 @@ function buildSettings(){
   btn('Экспорт коллекции (JSON)',()=>dl('linn_collection.json',{liked,fx}));
   btn('Сбросить настройки',()=>{P={...PDEF};savePrefs();buildSettings()});
   if(!ME.admin)btn('Сменить пароль',chPass);
+  b.appendChild(mkRow('Таймер сна',mkSel([[0,'Выкл'],[5,'5 мин'],[15,'15 мин'],[30,'30 мин'],[45,'45 мин'],[60,'1 час'],[90,'1.5 часа']],sleepMin,v=>setSleep(+v))));
   if(isTester()){
     b.appendChild(el('h4','','Лаборатория ТЕСТЕРОВЩИКА'));
     b.appendChild(el('p','','Тебе доступна скорость и тон 0.25×–3×, а также функции ниже.'));
-    b.appendChild(mkRow('Таймер сна',mkSel([[0,'Выкл'],[15,'15 мин'],[30,'30 мин'],[60,'1 час'],[90,'1.5 часа']],sleepMin,v=>setSleep(+v))));
+
     b.appendChild(mkRow('Показывать ID трека',mkSw(!!P.showid,v=>setP('showid',v))));
     btn('Отправить баг-репорт или идею',sendReport);
   }
 }
 applyPrefs();
-function restoreLast(){if(!P.restore||qi>=0)return;const t=ls.get('last',null);if(t&&t.id){queue=[t];qi=0;$('ti').textContent=t.title;$('ar').textContent=t.user||'';$('cov').src=t.thumb||'';$('cov').hidden=!t.thumb;$('ph').hidden=!!t.thumb}}
+function restoreLast(){if(!P.restore||qi>=0)return;const t=ls.get('last',null);if(isSoundCloud(t)){queue=[t];qi=0;$('ti').textContent=t.title;$('ar').textContent=t.user||'';$('cov').src=t.thumb||'';$('cov').hidden=!t.thumb;$('ph').hidden=!!t.thumb}}
 
 /* ---------- настройки ---------- */
 
@@ -1338,14 +1293,7 @@ async function pTools(b){
 
   /* ---------- платформа поиска ---------- */
   var sw=G('srcsw'),row=G('srcrow'),chips=G('chips'),q=G('q');
-  function applySrc(s,fromUser){
-    SRC=s;ls.set('src',s);sw.dataset.on=s;
-    [].forEach.call(sw.querySelectorAll('button'),function(b){b.classList.toggle('on',b.dataset.s===s)});
-    q.placeholder=s==='sc'?'Артист или трек на SoundCloud':'Артист, трек или ссылка на YouTube';
-    if(fromUser&&q.value.trim())run(q.value.trim());
-  }
-  sw.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.dataset.s!==SRC)applySrc(b.dataset.s,true)});
-  applySrc(SRC==='sc'?'sc':'yt',false);
+  SRC='sc';ls.set('src','sc');q.placeholder='Артист или трек на SoundCloud';
 
   /* ---------- хранилище загрузок (IndexedDB) ---------- */
   var DLOK=!!window.indexedDB,DL={},DLM={},TR={},prog={},Q=[],busy=false,ABORT={},URLS={},UORD=[],BADLOCAL={},DBP=null;
@@ -1359,7 +1307,7 @@ async function pTools(b){
     t.oncomplete=function(){res(out&&out.result)};t.onerror=t.onabort=function(){rej(t.error||new Error('Хранилище недоступно'))};
   })})}
   function dlTracks(){return tx('meta','readonly',function(t){return t.objectStore('meta').getAll()}).then(function(a){
-    a=(a||[]).sort(function(x,y){return y.ts-x.ts});
+    a=(a||[]).filter(isSoundCloud).sort(function(x,y){return y.ts-x.ts});
     return a.map(function(m){return {id:m.id,title:m.title,user:m.user,thumb:m.thumb,duration:m.duration,size:m.size}})})}
   function dlIndex(){return dlTracks().then(function(a){DL={};DLM={};a.forEach(function(m){DL[m.id]=1;DLM[m.id]=m});refresh();return a})}
   function dlDelete(id){
@@ -1378,6 +1326,7 @@ async function pTools(b){
 
   /* ---------- скачивание ---------- */
   function dlStart(t){
+    if(!isSoundCloud(t))return;
     if(DL[t.id]||prog[t.id]!=null)return;
     prog[t.id]=-1;Q.push(t);refresh();
     try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
@@ -1501,7 +1450,7 @@ async function pTools(b){
       info.textContent=txt})}
     upd();
     var all=el('button','abtn','Скачать всю коллекцию');all.type='button';
-    all.onclick=function(){var n=0;(liked||[]).forEach(function(t){if(!DL[t.id]&&prog[t.id]==null){TR[t.id]=t;dlStart(t);n++}});toast(n?'Добавлено в очередь: '+n:'Вся коллекция уже скачана',true)};
+    all.onclick=function(){var n=0;(liked||[]).filter(isSoundCloud).forEach(function(t){if(!DL[t.id]&&prog[t.id]==null){TR[t.id]=t;dlStart(t);n++}});toast(n?'Добавлено в очередь: '+n:'Вся коллекция уже скачана',true)};
     b.appendChild(all);
     var del=el('button','abtn','Удалить все загрузки');del.type='button';
     del.onclick=function(){if(!Object.keys(DL).length||!confirm('Удалить все скачанные треки?'))return;
@@ -1621,7 +1570,7 @@ async function pTools(b){
   addEventListener('scroll',unpress,{capture:true,passive:true});
 
   /* ---- перевод интерфейса ---- */
-  var EN={"Поиск": "Search", "Коллекция": "Library", "Загрузки": "Downloads", "Друзья": "Friends", "Панель владельца": "Owner panel", "Настройки": "Settings", "Обзор": "Browse", "Найти": "Find", "Вход": "Sign in", "Войти": "Sign in", "Выйти": "Sign out", "Регистрация": "Sign up", "Создать аккаунт": "Create account", "Логин": "Username", "Пароль": "Password", "Повтори пароль": "Repeat password", "Код приглашения": "Invite code", "Назад": "Back", "Дальше": "Next", "Закрыть": "Close", "Готово": "Done", "Отменить": "Cancel", "Удалить": "Delete", "Очистить": "Clear", "Принять": "Accept", "Отклонить": "Decline", "Сохранено": "Saved", "Сервер": "Server", "Аккаунт": "Account", "Заметка": "Note", "Статус": "Status", "Цвет": "Color", "Текст": "Lyrics", "Пусто": "Empty", "Свернуть": "Collapse", "Найди любую песню": "Find any song", "Недавно играли": "Recently played", "Результаты: ": "Results: ", "Результаты": "Results", "Показано: ": "Showing: ", "Ищу…": "Searching…", "Ищу текст…": "Looking for lyrics…", "Загружаю…": "Loading…", "Секунду": "One sec", "Ничего не играет": "Nothing playing", "Выбери трек": "Pick a track", "Играть / пауза": "Play / pause", "Перемешать": "Shuffle", "Повтор": "Repeat", "Повторить": "Repeat", "Перемотка": "Seek", "Громкость": "Volume", "Громкость по умолчанию": "Default volume", "Открыть плеер": "Open player", "Текст песни": "Song lyrics", "В коллекцию": "Add to library", "Скорость и тон": "Speed and pitch", "Сбросить на 1×": "Reset to 1×", "Оригинальная скорость и тональность": "Original speed and key", "полутона": "semitones", "Скорость": "Speed", "Тон ": "Pitch ", "Играть далее": "Play next", "В очередь": "Add to queue", "Очередь пуста": "Queue is empty", "Очередь": "Queue", "Очистить очередь": "Clear queue", "Ещё": "More", "Играть": "Play", "Добавлено: играет следующим": "Added: plays next", "Добавлено в очередь": "Added to queue", "Убрать из коллекции": "Remove from library", "Скопировать ссылку": "Copy link", "Ссылка скопирована": "Link copied", "Сохранить на телефон": "Save to phone", "Готовлю файл…": "Preparing file…", "Не удалось сохранить файл: ": "Could not save the file: ", "Нет связи с сервером LINN.": "No connection to the LINN server.", "Нажми Play, чтобы начать": "Press Play to start", "Сначала запусти любой трек": "Start any track first", "Выбери трек, и здесь появится его текст.": "Pick a track and its lyrics will appear here.", "Не тот текст?": "Wrong lyrics?", "Не удалось получить текст. Проверь, что сервер LINN запущен.": "Could not get the lyrics. Make sure the LINN server is running.", "Текст этого трека не нашёлся. Попробуй найти вручную:": "Lyrics for this track were not found. Try searching manually:", "Ползунок меняет скорость и тональность вместе, как на пластинке. Настройка запоминается для этого трека.": "The slider changes speed and pitch together, like a record. The setting is remembered for this track.", "Тебе доступна скорость и тон 0.25×–3×, а также функции ниже.": "Speed and pitch 0.25×–3× and the features below are available to you.", "Таймер сна: пауза": "Sleep timer: paused", "Таймер сна: ": "Sleep timer: ", "Таймер сна": "Sleep timer", " мин": " min", "1 час": "1 hour", "1.5 часа": "1.5 hours", "Выкл": "Off", "Моя коллекция": "My library", "Пока пусто.": "Nothing here yet.", "Тут пока пусто. Нажми на сердечко на обложке, и трек появится здесь.": "Nothing here yet. Tap the heart on a cover and the track will appear here.", "Тут пока пусто. Нажми на стрелку на обложке трека, и он сохранится в приложении.": "Nothing here yet. Tap the arrow on a track cover to save it in the app.", "Скачано: ": "Downloaded: ", "Скачать в приложение": "Download to the app", "Скачано. Нажми, чтобы удалить": "Downloaded. Tap to delete", "Отменить загрузку": "Cancel download", "Удалить загрузку": "Delete download", "Удалить из загрузок: ": "Delete from downloads: ", "Удалить все скачанные треки?": "Delete all downloaded tracks?", "Удалить все загрузки": "Delete all downloads", "Скачать всю коллекцию": "Download whole library", "Добавлено в очередь: ": "Added to queue: ", "Вся коллекция уже скачана": "The whole library is already downloaded", "Не скачалось: ": "Download failed: ", "нет места в хранилище": "not enough storage", "пустой ответ сервера": "empty server response", "Нет связи с сервером LINN, скачать не получится.": "No connection to the LINN server, can't download.", "Открыть загрузки без сервера": "Open downloads without server", "Офлайн: играют только скачанные треки. Чтобы войти в аккаунт, перезапусти приложение.": "Offline: only downloaded tracks play. Restart the app to sign in.", " · всего занято ": " · total used ", "Считаю…": "Counting…", "Это устройство": "This device", "Тема": "Theme", "Язык": "Language", "Тёмная": "Dark", "AMOLED (чёрная)": "AMOLED (black)", "Светлая": "Light", "Как в системе": "System", "Живой фон в плеере": "Live background in player", "Вибрация при нажатиях": "Haptics on tap", "Голубой": "Blue", "Сиреневый": "Lilac", "Жёлтый": "Yellow", "Синхронизация сервера": "Server sync", "Адрес сервера берётся из последнего сообщения в открытом Telegram-канале": "The server address is taken from the last message in a public Telegram channel", "Проверить сейчас": "Check now", "Укажи канал Telegram": "Enter a Telegram channel", "В канале не нашёл адрес сервера": "No server address found in the channel", "Адрес сервера обновлён": "Server address updated", "Адрес уже актуальный": "Address is already up to date", "Telegram недоступен: ": "Telegram unavailable: ", "Артист, трек или ссылка на YouTube": "Artist, track or YouTube link", "Артист или трек на SoundCloud": "Artist or track on SoundCloud", "Введи артиста или название. Или выбери исполнителя сверху.": "Enter an artist or title. Or pick an artist above.", "Ничего не нашлось. Попробуй другой запрос.": "Nothing found. Try another query.", "Поиск не сработал": "Search failed", "Поиск включён": "Search enabled", "Трек по ссылке": "Track from link", "Не удалось загрузить. Запусти start.bat (свой сервер) или проверь адрес сервера в настройках": "Could not load. Run start.bat (your own server) or check the server address in settings", "Нет связи с сервером LINN. Запусти start.bat или проверь адрес в настройках.": "No connection to the LINN server. Run start.bat or check the address in settings.", "Сервер LINN не смог взять звук. ": "The LINN server could not get the audio. ", "Подробности в чёрном окне сервера.": "Details are in the server's black window.", "YouTube просит подтвердить, что ты не бот.": "YouTube asks to confirm you are not a bot.", "Скорее всего, yt-dlp не хватает Deno: закрой окно сервера и запусти start.bat заново.": "Most likely yt-dlp is missing Deno: close the server window and run start.bat again.", "Открой настройки (шестерёнка вверху) и вставь адрес другого сервера Piped или ключ YouTube Data API. Ссылку на трек с YouTube можно вставить в строку поиска.": "Open settings (gear at the top) and paste another Piped server address or a YouTube Data API key. You can paste a YouTube track link into the search bar.", "Запущена СТАРАЯ версия linn_server.py. Закрой окно сервера, замени файл на новый и запусти start.bat заново.": "An OLD version of linn_server.py is running. Close the server window, replace the file with the new one and run start.bat again.", "нет ответа от серверов": "no response from servers", "поисковые сервера не отвечают": "search servers are not responding", "сессия истекла": "session expired", "Сессия истекла. Войди снова.": "Session expired. Sign in again.", "Ошибка сервера (": "Server error (", "Сервер временно недоступен": "Server temporarily unavailable", "Эта платформа работает только через сервер LINN": "This platform only works through the LINN server", "SoundCloud работает только через сервер LINN": "SoundCloud only works through the LINN server", "Воспроизведение": "Playback", "Автопереход к следующему треку": "Auto-play next track", "Помнить последний трек и громкость": "Remember last track and volume", "Горячие клавиши (←/→, N, P, M, L)": "Hotkeys (←/→, N, P, M, L)", "Бейдж скорости на обложках": "Speed badge on covers", "Внешний вид": "Appearance", "Цвет акцента": "Accent color", "Размер карточек": "Card size", "Размер текста": "Text size", "Анимации": "Animations", "Мелкие": "Small", "Обычные": "Normal", "Крупные": "Large", "Мелкий": "Small", "Обычный": "Normal", "Крупный": "Large", "Фиолетовый": "Purple", "Розовый": "Pink", "Бирюзовый": "Teal", "Персиковый": "Peach", "Зелёный": "Green", "Красный": "Red", "Открывать текст вместе с плеером": "Open lyrics with the player", "Поиск и коллекция": "Search and library", "Быстрые исполнители и история": "Quick artists and history", "Запоминать историю поиска": "Remember search history", "Сортировка коллекции": "Library sorting", "Сначала новые": "Newest first", "Сначала старые": "Oldest first", "По названию": "By title", "По исполнителю": "By artist", "Данные и аккаунт": "Data and account", "Сменить пароль": "Change password", "Текущий пароль:": "Current password:", "Новый пароль (от 6 символов):": "New password (6+ characters):", "Пароль изменён": "Password changed", "Экспорт коллекции (JSON)": "Export library (JSON)", "Очистить коллекцию ": "Clear library ", " вместе с коллекцией?": " along with the library?", "Очистить историю поиска": "Clear search history", "Сбросить настройки": "Reset settings", "Отправить баг-репорт или идею": "Send a bug report or idea", "Опиши проблему или идею:": "Describe the problem or idea:", "Отправлено владельцу, спасибо!": "Sent to the owner, thank you!", "Поддержка": "Support", "Написать в Telegram": "Write on Telegram", "Показывать ID трека": "Show track ID", "Тексты песен включены": "Lyrics enabled", "Лаборатория ТЕСТЕРОВЩИКА": "TESTER lab", "ТЕСТЕРОВЩИК": "TESTER", "Не удалось сохранить коллекцию: ": "Could not save the library: ", "Не удалось загрузить коллекцию: ": "Could not load the library: ", "Имя и статус": "Name and status", "Имя в профиле (необязательно)": "Profile name (optional)", "Статус / о себе": "Status / about me", "Аватар": "Avatar", "Сохранить профиль": "Save profile", "Профиль сохранён": "Profile saved", "Фото профиля": "Profile photo", "Загрузить фото": "Upload photo", "Убрать фото": "Remove photo", "Загрузить баннер": "Upload banner", "Убрать баннер": "Remove banner", "Баннер": "Banner", "Цвет ника": "Name color", "Эффект ника": "Name effect", "Без эффекта": "No effect", "Свечение": "Glow", "Радуга": "Rainbow", "Градиент": "Gradient", "Не удалось открыть картинку": "Could not open the image", "Добавить в друзья": "Add friend", "Удалить из друзей": "Remove friend", "Поиск по логину…": "Search by username…", "Найти человека по нику или логину…": "Find a person by nickname or username…", "Найди друзей по нику.": "Find friends by nickname.", "Никого не нашлось.": "Nobody found.", "Пока никого": "Nobody yet", "Входящие заявки": "Incoming requests", "Исходящие заявки": "Outgoing requests", "Заявка отправлена — отменить": "Request sent — cancel", "Уведомления": "Notifications", "Уведомлений нет.": "No notifications.", "Отметить всё прочитанным": "Mark all as read", "Не беспокоить": "Do not disturb", "Невидимка": "Invisible", "В сети": "Online", "Отошёл": "Away", "не в сети": "offline", "Блок": "Block", "Заблокировать": "Block", "Разблокировать": "Unblock", "Заблокировано": "Blocked", "Заблокированные": "Blocked users", "Владелец": "Owner", " (владелец)": " (owner)", "Владелец проекта LINNmusic": "LINNmusic project owner", "Пользователи": "Users", "Пользователь": "User", "Пользователей": "Users", "Тестеров": "Testers", "Репорты": "Reports", "Репортов": "Reports", "Репортов от тестеров пока нет.": "No reports from testers yet.", "Стримов": "Streams", "Поисков": "Searches", "Текстов": "Lyrics", "Входов": "Logins", "Неудачных входов": "Failed logins", "Активных сессий": "Active sessions", "Аптайм": "Uptime", "Новых за 24 ч": "New in 24h", "Треков в коллекциях": "Tracks in libraries", "Самые частые треки в коллекциях": "Most common tracks in libraries", "Обслуживание": "Maintenance", "Сессии": "Sessions", "Журнал": "Log", "Журнал пуст.": "Log is empty.", "Журнал очищен": "Log cleared", "Очистить журнал": "Clear log", "Фильтр: login, admin, reg…": "Filter: login, admin, reg…", "Выкинуть": "Kick out", "Завершить": "End", "Завершить все, кроме моей": "End all except mine", "Бан": "Ban", "БАН": "BAN", "Разбанить": "Unban", "Причина бана: ": "Ban reason: ", " · причина: ": " · reason: ", "действует до ": "valid until ", "Сделать тестером": "Make tester", "Снять тестера": "Remove tester", "Заметка о пользователе: ": "Note about user: ", "Новый пароль для ": "New password for ", " (от 6 символов): ": " (6+ characters): ", "Регистрация открыта": "Registration open", "Технические работы (входит только владелец)": "Maintenance (owner only)", "Объявление для всех (пусто — скрыть)": "Announcement for everyone (empty — hide)", "Код приглашения (пусто — не нужен)": "Invite code (empty — not required)", "Срок сессии, дней": "Session length, days", "Макс. треков в коллекции": "Max tracks in library", "Результатов в поиске (5–50)": "Search results (5–50)", "Сделать бэкап на диск (папка backups)": "Back up to disk (backups folder)", "Бэкап сохранён": "Backup saved", "Скачать экспорт базы (без паролей)": "Download database export (no passwords)", "Кэш звука": "Audio cache", "Кэш текстов": "Lyrics cache", "Очистить кэш звука": "Clear audio cache", "Очистить кэш текстов": "Clear lyrics cache", "Кэш звука очищен": "Audio cache cleared", "Кэш текстов очищен": "Lyrics cache cleared", "Статус изменён": "Status changed", "Поиск по логину": "Search by username", "рег.: ": "reg.: ", " · вход: ": " · login: ", " · треков: ": " · tracks: ", " · трек ": " · track ", " · треков": " · tracks", " из ": " of ", "в коллекциях: ": "in libraries: ", "Введи логин и пароль.": "Enter username and password.", "Пароли не совпадают.": "Passwords don't match.", "Пароль должен быть не короче 6 символов.": "Password must be at least 6 characters.", "Логин: 3–24 символа — латиница, цифры, _ . -": "Username: 3–24 characters — Latin letters, digits, _ . -", "Логин: 3–24 символа (латиница, цифры, _ . -). Пароль: от 6 символов.": "Username: 3–24 characters (Latin letters, digits, _ . -). Password: 6+ characters.", "Нажми, чтобы скрыть": "Tap to hide", "нажми, чтобы скрыть": "tap to hide", " (нажми, чтобы скрыть)": " (tap to hide)", "Логин (латиница, цифры)": "Username (Latin letters, digits)", "Telegram-канал с адресом сервера": "Telegram channel with the server address", "@канал (необязательно)": "@channel (optional)", "@канал": "@channel", "Тут пока пусто.": "Nothing here yet.", " ч ": " h ", "Причина бана:": "Ban reason:", "Заметка о пользователе:": "Note about user:", "(от 6 символов):": "(6+ characters):", "Удалить все": "Delete all", "Хранилище недоступно": "Storage unavailable", " ГБ": " GB", " МБ": " MB", "нет связи с сервером": "no connection to the server", "Сервер не отвечает. Проверь адрес и что туннель запущен.": "Server not responding. Check the address and that the tunnel is running."},EN_KEYS=Object.keys(EN).sort(function(x,y){return y.length-x.length}),LANG=lsd('lang','ru')==='en'?'en':'ru',RU=/[А-Яа-яЁё]/,ORIG=new WeakMap(),LAST=new WeakMap();
+  var EN={"Поиск": "Search", "Коллекция": "Library", "Загрузки": "Downloads", "Друзья": "Friends", "Панель владельца": "Owner panel", "Настройки": "Settings", "Обзор": "Browse", "Найти": "Find", "Вход": "Sign in", "Войти": "Sign in", "Выйти": "Sign out", "Регистрация": "Sign up", "Создать аккаунт": "Create account", "Логин": "Username", "Пароль": "Password", "Повтори пароль": "Repeat password", "Код приглашения": "Invite code", "Назад": "Back", "Дальше": "Next", "Закрыть": "Close", "Готово": "Done", "Отменить": "Cancel", "Удалить": "Delete", "Очистить": "Clear", "Принять": "Accept", "Отклонить": "Decline", "Сохранено": "Saved", "Сервер": "Server", "Аккаунт": "Account", "Заметка": "Note", "Статус": "Status", "Цвет": "Color", "Текст": "Lyrics", "Пусто": "Empty", "Свернуть": "Collapse", "Найди любую песню": "Find any song", "Недавно играли": "Recently played", "Результаты: ": "Results: ", "Результаты": "Results", "Показано: ": "Showing: ", "Ищу…": "Searching…", "Ищу текст…": "Looking for lyrics…", "Загружаю…": "Loading…", "Секунду": "One sec", "Ничего не играет": "Nothing playing", "Выбери трек": "Pick a track", "Играть / пауза": "Play / pause", "Перемешать": "Shuffle", "Повтор": "Repeat", "Повторить": "Repeat", "Перемотка": "Seek", "Громкость": "Volume", "Громкость по умолчанию": "Default volume", "Открыть плеер": "Open player", "Текст песни": "Song lyrics", "В коллекцию": "Add to library", "Скорость и тон": "Speed and pitch", "Сбросить на 1×": "Reset to 1×", "Оригинальная скорость и тональность": "Original speed and key", "полутона": "semitones", "Скорость": "Speed", "Тон ": "Pitch ", "Играть далее": "Play next", "В очередь": "Add to queue", "Очередь пуста": "Queue is empty", "Очередь": "Queue", "Очистить очередь": "Clear queue", "Ещё": "More", "Играть": "Play", "Добавлено: играет следующим": "Added: plays next", "Добавлено в очередь": "Added to queue", "Убрать из коллекции": "Remove from library", "Скопировать ссылку": "Copy link", "Ссылка скопирована": "Link copied", "Сохранить на телефон": "Save to phone", "Готовлю файл…": "Preparing file…", "Не удалось сохранить файл: ": "Could not save the file: ", "Нет связи с сервером LINN.": "No connection to the LINN server.", "Нажми Play, чтобы начать": "Press Play to start", "Сначала запусти любой трек": "Start any track first", "Выбери трек, и здесь появится его текст.": "Pick a track and its lyrics will appear here.", "Не тот текст?": "Wrong lyrics?", "Не удалось получить текст. Проверь, что сервер LINN запущен.": "Could not get the lyrics. Make sure the LINN server is running.", "Текст этого трека не нашёлся. Попробуй найти вручную:": "Lyrics for this track were not found. Try searching manually:", "Ползунок меняет скорость и тональность вместе, как на пластинке. Настройка запоминается для этого трека.": "The slider changes speed and pitch together, like a record. The setting is remembered for this track.", "Тебе доступна скорость и тон 0.25×–3×, а также функции ниже.": "Speed and pitch 0.25×–3× and the features below are available to you.", "Таймер сна: пауза": "Sleep timer: paused", "Таймер сна: ": "Sleep timer: ", "Таймер сна": "Sleep timer", " мин": " min", "1 час": "1 hour", "1.5 часа": "1.5 hours", "Выкл": "Off", "Моя коллекция": "My library", "Пока пусто.": "Nothing here yet.", "Тут пока пусто. Нажми на сердечко на обложке, и трек появится здесь.": "Nothing here yet. Tap the heart on a cover and the track will appear here.", "Тут пока пусто. Нажми на стрелку на обложке трека, и он сохранится в приложении.": "Nothing here yet. Tap the arrow on a track cover to save it in the app.", "Скачано: ": "Downloaded: ", "Скачать в приложение": "Download to the app", "Скачано. Нажми, чтобы удалить": "Downloaded. Tap to delete", "Отменить загрузку": "Cancel download", "Удалить загрузку": "Delete download", "Удалить из загрузок: ": "Delete from downloads: ", "Удалить все скачанные треки?": "Delete all downloaded tracks?", "Удалить все загрузки": "Delete all downloads", "Скачать всю коллекцию": "Download whole library", "Добавлено в очередь: ": "Added to queue: ", "Вся коллекция уже скачана": "The whole library is already downloaded", "Не скачалось: ": "Download failed: ", "нет места в хранилище": "not enough storage", "пустой ответ сервера": "empty server response", "Нет связи с сервером LINN, скачать не получится.": "No connection to the LINN server, can't download.", "Открыть загрузки без сервера": "Open downloads without server", "Офлайн: играют только скачанные треки. Чтобы войти в аккаунт, перезапусти приложение.": "Offline: only downloaded tracks play. Restart the app to sign in.", " · всего занято ": " · total used ", "Считаю…": "Counting…", "Это устройство": "This device", "Тема": "Theme", "Язык": "Language", "Тёмная": "Dark", "AMOLED (чёрная)": "AMOLED (black)", "Светлая": "Light", "Как в системе": "System", "Живой фон в плеере": "Live background in player", "Вибрация при нажатиях": "Haptics on tap", "Голубой": "Blue", "Сиреневый": "Lilac", "Жёлтый": "Yellow", "Синхронизация сервера": "Server sync", "Адрес сервера берётся из последнего сообщения в открытом Telegram-канале": "The server address is taken from the last message in a public Telegram channel", "Проверить сейчас": "Check now", "Укажи канал Telegram": "Enter a Telegram channel", "В канале не нашёл адрес сервера": "No server address found in the channel", "Адрес сервера обновлён": "Server address updated", "Адрес уже актуальный": "Address is already up to date", "Telegram недоступен: ": "Telegram unavailable: ", "Артист или трек на SoundCloud": "Artist, track or SoundCloud link", "Артист или трек на SoundCloud": "Artist or track on SoundCloud", "Введи артиста или название. Или выбери исполнителя сверху.": "Enter an artist or title. Or pick an artist above.", "Ничего не нашлось. Попробуй другой запрос.": "Nothing found. Try another query.", "Поиск не сработал": "Search failed", "Поиск включён": "Search enabled", "Трек по ссылке": "Track from link", "Не удалось загрузить. Запусти start.bat (свой сервер) или проверь адрес сервера в настройках": "Could not load. Run start.bat (your own server) or check the server address in settings", "Нет связи с сервером LINN. Запусти start.bat или проверь адрес в настройках.": "No connection to the LINN server. Run start.bat or check the address in settings.", "Сервер LINN не смог взять звук. ": "The LINN server could not get the audio. ", "Подробности в чёрном окне сервера.": "Details are in the server's black window.", "SoundCloud просит подтвердить, что ты не бот.": "SoundCloud asks to confirm you are not a bot.", "Скорее всего, yt-dlp не хватает Deno: закрой окно сервера и запусти start.bat заново.": "Most likely yt-dlp is missing Deno: close the server window and run start.bat again.", "Открой настройки (шестерёнка вверху) и вставь адрес другого сервера LINN или ключ SoundCloud Data API. Ссылку на трек с SoundCloud можно вставить в строку поиска.": "Open settings (gear at the top) and paste another LINN server address or a SoundCloud Data API key. You can paste a SoundCloud track link into the search bar.", "Запущена СТАРАЯ версия linn_server.py. Закрой окно сервера, замени файл на новый и запусти start.bat заново.": "An OLD version of linn_server.py is running. Close the server window, replace the file with the new one and run start.bat again.", "нет ответа от серверов": "no response from servers", "поисковые сервера не отвечают": "search servers are not responding", "сессия истекла": "session expired", "Сессия истекла. Войди снова.": "Session expired. Sign in again.", "Ошибка сервера (": "Server error (", "Сервер временно недоступен": "Server temporarily unavailable", "Эта платформа работает только через сервер LINN": "This platform only works through the LINN server", "SoundCloud работает только через сервер LINN": "SoundCloud only works through the LINN server", "Воспроизведение": "Playback", "Автопереход к следующему треку": "Auto-play next track", "Помнить последний трек и громкость": "Remember last track and volume", "Горячие клавиши (←/→, N, P, M, L)": "Hotkeys (←/→, N, P, M, L)", "Бейдж скорости на обложках": "Speed badge on covers", "Внешний вид": "Appearance", "Цвет акцента": "Accent color", "Размер карточек": "Card size", "Размер текста": "Text size", "Анимации": "Animations", "Мелкие": "Small", "Обычные": "Normal", "Крупные": "Large", "Мелкий": "Small", "Обычный": "Normal", "Крупный": "Large", "Фиолетовый": "Purple", "Розовый": "Pink", "Бирюзовый": "Teal", "Персиковый": "Peach", "Зелёный": "Green", "Красный": "Red", "Открывать текст вместе с плеером": "Open lyrics with the player", "Поиск и коллекция": "Search and library", "Быстрые исполнители и история": "Quick artists and history", "Запоминать историю поиска": "Remember search history", "Сортировка коллекции": "Library sorting", "Сначала новые": "Newest first", "Сначала старые": "Oldest first", "По названию": "By title", "По исполнителю": "By artist", "Данные и аккаунт": "Data and account", "Сменить пароль": "Change password", "Текущий пароль:": "Current password:", "Новый пароль (от 6 символов):": "New password (6+ characters):", "Пароль изменён": "Password changed", "Экспорт коллекции (JSON)": "Export library (JSON)", "Очистить коллекцию ": "Clear library ", " вместе с коллекцией?": " along with the library?", "Очистить историю поиска": "Clear search history", "Сбросить настройки": "Reset settings", "Отправить баг-репорт или идею": "Send a bug report or idea", "Опиши проблему или идею:": "Describe the problem or idea:", "Отправлено владельцу, спасибо!": "Sent to the owner, thank you!", "Поддержка": "Support", "Написать в Telegram": "Write on Telegram", "Показывать ID трека": "Show track ID", "Тексты песен включены": "Lyrics enabled", "Лаборатория ТЕСТЕРОВЩИКА": "TESTER lab", "ТЕСТЕРОВЩИК": "TESTER", "Не удалось сохранить коллекцию: ": "Could not save the library: ", "Не удалось загрузить коллекцию: ": "Could not load the library: ", "Имя и статус": "Name and status", "Имя в профиле (необязательно)": "Profile name (optional)", "Статус / о себе": "Status / about me", "Аватар": "Avatar", "Сохранить профиль": "Save profile", "Профиль сохранён": "Profile saved", "Фото профиля": "Profile photo", "Загрузить фото": "Upload photo", "Убрать фото": "Remove photo", "Загрузить баннер": "Upload banner", "Убрать баннер": "Remove banner", "Баннер": "Banner", "Цвет ника": "Name color", "Эффект ника": "Name effect", "Без эффекта": "No effect", "Свечение": "Glow", "Радуга": "Rainbow", "Градиент": "Gradient", "Не удалось открыть картинку": "Could not open the image", "Добавить в друзья": "Add friend", "Удалить из друзей": "Remove friend", "Поиск по логину…": "Search by username…", "Найти человека по нику или логину…": "Find a person by nickname or username…", "Найди друзей по нику.": "Find friends by nickname.", "Никого не нашлось.": "Nobody found.", "Пока никого": "Nobody yet", "Входящие заявки": "Incoming requests", "Исходящие заявки": "Outgoing requests", "Заявка отправлена — отменить": "Request sent — cancel", "Уведомления": "Notifications", "Уведомлений нет.": "No notifications.", "Отметить всё прочитанным": "Mark all as read", "Не беспокоить": "Do not disturb", "Невидимка": "Invisible", "В сети": "Online", "Отошёл": "Away", "не в сети": "offline", "Блок": "Block", "Заблокировать": "Block", "Разблокировать": "Unblock", "Заблокировано": "Blocked", "Заблокированные": "Blocked users", "Владелец": "Owner", " (владелец)": " (owner)", "Владелец проекта LINNmusic": "LINNmusic project owner", "Пользователи": "Users", "Пользователь": "User", "Пользователей": "Users", "Тестеров": "Testers", "Репорты": "Reports", "Репортов": "Reports", "Репортов от тестеров пока нет.": "No reports from testers yet.", "Стримов": "Streams", "Поисков": "Searches", "Текстов": "Lyrics", "Входов": "Logins", "Неудачных входов": "Failed logins", "Активных сессий": "Active sessions", "Аптайм": "Uptime", "Новых за 24 ч": "New in 24h", "Треков в коллекциях": "Tracks in libraries", "Самые частые треки в коллекциях": "Most common tracks in libraries", "Обслуживание": "Maintenance", "Сессии": "Sessions", "Журнал": "Log", "Журнал пуст.": "Log is empty.", "Журнал очищен": "Log cleared", "Очистить журнал": "Clear log", "Фильтр: login, admin, reg…": "Filter: login, admin, reg…", "Выкинуть": "Kick out", "Завершить": "End", "Завершить все, кроме моей": "End all except mine", "Бан": "Ban", "БАН": "BAN", "Разбанить": "Unban", "Причина бана: ": "Ban reason: ", " · причина: ": " · reason: ", "действует до ": "valid until ", "Сделать тестером": "Make tester", "Снять тестера": "Remove tester", "Заметка о пользователе: ": "Note about user: ", "Новый пароль для ": "New password for ", " (от 6 символов): ": " (6+ characters): ", "Регистрация открыта": "Registration open", "Технические работы (входит только владелец)": "Maintenance (owner only)", "Объявление для всех (пусто — скрыть)": "Announcement for everyone (empty — hide)", "Код приглашения (пусто — не нужен)": "Invite code (empty — not required)", "Срок сессии, дней": "Session length, days", "Макс. треков в коллекции": "Max tracks in library", "Результатов в поиске (5–50)": "Search results (5–50)", "Сделать бэкап на диск (папка backups)": "Back up to disk (backups folder)", "Бэкап сохранён": "Backup saved", "Скачать экспорт базы (без паролей)": "Download database export (no passwords)", "Кэш звука": "Audio cache", "Кэш текстов": "Lyrics cache", "Очистить кэш звука": "Clear audio cache", "Очистить кэш текстов": "Clear lyrics cache", "Кэш звука очищен": "Audio cache cleared", "Кэш текстов очищен": "Lyrics cache cleared", "Статус изменён": "Status changed", "Поиск по логину": "Search by username", "рег.: ": "reg.: ", " · вход: ": " · login: ", " · треков: ": " · tracks: ", " · трек ": " · track ", " · треков": " · tracks", " из ": " of ", "в коллекциях: ": "in libraries: ", "Введи логин и пароль.": "Enter username and password.", "Пароли не совпадают.": "Passwords don't match.", "Пароль должен быть не короче 6 символов.": "Password must be at least 6 characters.", "Логин: 3–24 символа — латиница, цифры, _ . -": "Username: 3–24 characters — Latin letters, digits, _ . -", "Логин: 3–24 символа (латиница, цифры, _ . -). Пароль: от 6 символов.": "Username: 3–24 characters (Latin letters, digits, _ . -). Password: 6+ characters.", "Нажми, чтобы скрыть": "Tap to hide", "нажми, чтобы скрыть": "tap to hide", " (нажми, чтобы скрыть)": " (tap to hide)", "Логин (латиница, цифры)": "Username (Latin letters, digits)", "Telegram-канал с адресом сервера": "Telegram channel with the server address", "@канал (необязательно)": "@channel (optional)", "@канал": "@channel", "Тут пока пусто.": "Nothing here yet.", " ч ": " h ", "Причина бана:": "Ban reason:", "Заметка о пользователе:": "Note about user:", "(от 6 символов):": "(6+ characters):", "Удалить все": "Delete all", "Хранилище недоступно": "Storage unavailable", " ГБ": " GB", " МБ": " MB", "нет связи с сервером": "no connection to the server", "Сервер не отвечает. Проверь адрес и что туннель запущен.": "Server not responding. Check the address and that the tunnel is running."},EN_KEYS=Object.keys(EN).sort(function(x,y){return y.length-x.length}),LANG=lsd('lang','ru')==='en'?'en':'ru',RU=/[А-Яа-яЁё]/,ORIG=new WeakMap(),LAST=new WeakMap();
   function tr(s){
     if(LANG==='ru'||!s||!RU.test(s))return s;
     var m=EN[s];if(m!=null)return m;var t=s;
@@ -1795,7 +1744,6 @@ async function pTools(b){
     else if(s==='busy')sitem('x','Отменить загрузку',function(){dlCancel(t.id)});
     else sitem('trash','Удалить загрузку',function(){dlDelete(t.id).then(function(){if(mode==='dl')showDl()})},'del');
     sitem('phone','Сохранить на телефон',function(){saveDevice(t)});
-    if(!/^sc-/.test(t.id))sitem('link','Скопировать ссылку',function(){copyText('https://youtu.be/'+t.id)});
     sh.classList.remove('closing');sh.classList.add('on');hap('med');
   }
   function openQueue(){
@@ -1858,7 +1806,7 @@ async function pTools(b){
   }
 
   /* ---- «играть» и «перемешать», недавние ---- */
-  var REC=ls.get('recent',[]),REC_SHOWN=false,lastRec='';
+  var REC=ls.get('recent',[]).filter(isSoundCloud),REC_SHOWN=false,lastRec='';
   a.addEventListener('playing',function(){
     var c=cur();if(!c||c.id===lastRec)return;lastRec=c.id;
     REC=REC.filter(function(x){return x.id!==c.id});REC.unshift({id:c.id,title:c.title,user:c.user,thumb:c.thumb,duration:c.duration});REC=REC.slice(0,40);ls.set('recent',REC);
@@ -2083,6 +2031,178 @@ async function pTools(b){
     var e=document.getElementById('aErr');if(e)e.textContent=linnOk?'':'Сервер не отвечает. Проверь адрес и что туннель запущен.';
   });
 })();
+</script>
+<script>
+/* My Wave: SoundCloud only; no changes to the account data schema. */
+const WAVE={active:false,epoch:0,page:0,seen:new Set(),pending:null,seed:'',mood:'mix',advance:false};
+const waveCard=document.createElement('section');
+waveCard.id='myWave';
+waveCard.innerHTML='<div><small>SOUNDCLOUD · ДЛЯ ТЕБЯ</small><h2>Моя волна</h2><p id="waveStatus" aria-live="polite">Любимые исполнители и новые находки</p></div><div class="waveControls"><select id="waveMood" aria-label="Настроение волны"><option value="mix">Для меня</option><option value="calm">Спокойствие</option><option value="energy">Энергия</option><option value="focus">Фокус</option><option value="night">Ночь</option></select><button type="button" id="waveStart">▶ Включить волну</button><button type="button" id="waveStop" hidden>Остановить волну</button></div>';
+$('h').parentNode.insertBefore(waveCard,$('h'));
+const waveStyle=document.createElement('style');
+waveStyle.textContent='#myWave{margin:12px 0 24px;padding:24px;border:1px solid #7860cc66;border-radius:24px;background:radial-gradient(ellipse at top right,#7652bc88,transparent 65%),linear-gradient(120deg,#292047,#151022);display:flex;gap:20px;align-items:center;justify-content:space-between}#myWave h2{font-size:2rem;margin:6px 0}#myWave small{letter-spacing:.15em;color:#c6b2ff;font-size:.65rem}#myWave p{color:#d2c9e4;margin:6px 0;font-size:.85rem}.waveControls{display:flex;flex-wrap:wrap;gap:8px;max-width:320px}.waveControls button,.waveControls select{border:1px solid #ffffff26;border-radius:14px;padding:12px;background:#241b3e;color:#fff;font:inherit}#waveStart{background:#ab91ff;color:#140c29;font-weight:700}.waveControls button:disabled{opacity:.6}@media(max-width:600px){#myWave{align-items:stretch;flex-direction:column;padding:20px}.waveControls{max-width:none}#myWave h2{font-size:1.7rem}}';
+document.head.appendChild(waveStyle);
+function waveStatus(text){$('waveStatus').textContent=text}
+function waveStop(pause=false){WAVE.active=false;WAVE.epoch++;WAVE.pending=null;WAVE.advance=false;$('waveStart').disabled=false;$('waveStop').hidden=true;if(pause)a.pause();waveStatus('Любимые исполнители и новые находки')}
+async function waveFill(){
+  if(!WAVE.active)return [];
+  if(WAVE.pending)return WAVE.pending;
+  const epoch=WAVE.epoch;
+  const job=(async()=>{
+    for(let attempt=0;attempt<3;attempt++){
+      const exclude=[...new Set([...WAVE.seen,...queue.map(t=>t.id)])].slice(-500).join(',');
+      const d=await tfetch(LINN+'/wave?'+tq()+'&page='+WAVE.page+'&mood='+enc(WAVE.mood)+'&seed='+enc(WAVE.seed)+'&exclude='+enc(exclude),45000);
+      if(!WAVE.active||epoch!==WAVE.epoch)return [];
+      WAVE.page=d.page;
+      const tracks=(d.tracks||[]).filter(t=>isSoundCloud(t)&&!WAVE.seen.has(t.id)&&!queue.some(q=>q.id===t.id));
+      const unique=tracks.filter((t,i)=>tracks.findIndex(x=>x.id===t.id)===i);
+      if(unique.length){unique.forEach(t=>WAVE.seen.add(t.id));waveStatus(d.personalized?'По твоим исполнителям · '+d.basis:'Новые находки · '+$('waveMood').selectedOptions[0].textContent);return unique}
+    }
+    return [];
+  })();
+  WAVE.pending=job;
+  try{return await job}finally{if(WAVE.pending===job)WAVE.pending=null}
+}
+async function waveStart(){
+  waveStop();
+  if(!ME||!TOKEN){toast('Войди в аккаунт, чтобы включить волну');return}
+  const starting=WAVE.epoch;$('waveStart').disabled=true;$('waveStop').hidden=false;
+  await pingLinn();if(starting!==WAVE.epoch)return;if(!linnOk){waveStop();toast('Для волны нужно подключение к серверу');return}
+  WAVE.active=true;WAVE.epoch++;WAVE.page=0;WAVE.seen=new Set();WAVE.seed=isSoundCloud(cur())?(cur().user||''):'';WAVE.mood=$('waveMood').value;
+  const epoch=WAVE.epoch;
+  $('waveStart').disabled=true;$('waveStop').hidden=false;waveStatus('Собираю твою волну…');
+  try{
+    const tracks=await waveFill();if(epoch!==WAVE.epoch)return;
+    if(!tracks.length)throw new Error('Нет новых треков — выбери другое настроение');
+    mode='home';setNav();home={q:'Моя волна',list:tracks};list=tracks;$('h').textContent='Моя волна';draw();
+    await play(tracks,0,true);
+  }catch(e){if(epoch!==WAVE.epoch)return;waveStop();waveStatus('Не удалось собрать волну. '+e.message)}
+  finally{if(epoch===WAVE.epoch)$('waveStart').disabled=false}
+}
+$('waveStart').onclick=waveStart;$('waveStop').onclick=()=>waveStop(true);
+$('waveMood').onchange=()=>{if(WAVE.active)waveStart()};
+const waveBasePlay=play;
+play=async function(tracks,index,keepWave=false){
+  if(!isSoundCloud(tracks[index])){toast('Этот трек недоступен в SoundCloud-версии');return}
+  if(!keepWave&&tracks!==queue)waveStop();
+  const chosen=tracks[index],filtered=tracks.filter(isSoundCloud);
+  return waveBasePlay(filtered,filtered.indexOf(chosen));
+};
+const waveBaseStep=step;
+step=async function(direction){
+  if(!WAVE.active||direction<0)return waveBaseStep(direction);
+  if(WAVE.advance)return;
+  WAVE.advance=true;const epoch=WAVE.epoch;
+  try{
+    if(qi+1>=queue.length){waveStatus('Ищу продолжение…');const more=await waveFill();if(epoch!==WAVE.epoch)return;queue.push(...more)}
+    if(qi+1<queue.length){await play(queue,qi+1,true)}
+    else{waveStatus('Новые треки закончились. Запусти волну снова.');WAVE.active=false;$('waveStop').hidden=true}
+  }catch(e){if(epoch===WAVE.epoch)waveStatus('Продолжение недоступно. Нажми «Дальше», чтобы повторить.')}
+  finally{if(epoch===WAVE.epoch)WAVE.advance=false}
+};
+const waveBaseSignOut=signOut;signOut=function(){waveStop();searchToken++;return waveBaseSignOut.apply(this,arguments)};
+const waveBaseNav=setNav;setNav=function(){waveBaseNav.apply(this,arguments);waveCard.hidden=mode!=='home'};
+setNav();
+
+</script>
+<script>
+/* Shuffle bag: each track once per pass, reset when queue contents change. */
+let shuffleBag=[],shuffleSignature='';
+function nextShuffleIndex(ids,current,random=Math.random){
+  const signature=JSON.stringify(ids);
+  if(signature!==shuffleSignature){shuffleSignature=signature;shuffleBag=[]}
+  shuffleBag=shuffleBag.filter(i=>i!==current&&i<ids.length);
+  if(!shuffleBag.length){
+    shuffleBag=ids.map((_,i)=>i).filter(i=>i!==current);
+    for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]]}
+  }
+  return shuffleBag.length?shuffleBag.pop():current;
+}
+const extraStep=step;
+step=function(direction){
+  if(WAVE.active||!shuffle||direction<0||!queue.length)return extraStep(direction);
+  return play(queue,nextShuffleIndex(queue.map(t=>t.id),qi));
+};
+const extraPlay=play;
+play=function(tracks,index,keepWave=false){
+  if(tracks!==queue&&!keepWave){shuffleBag=[];shuffleSignature=''}
+  return extraPlay(tracks,index,keepWave);
+};
+</script>
+<script>
+/* Device-local, account-scoped history and explicit queue resume. */
+(function(){
+  const key=kind=>ME?'linn:'+String(ME.login).toLowerCase()+':'+kind:null;
+  const read=(kind,fallback)=>{const k=key(kind);return k?ls.get(k,fallback):fallback};
+  const write=(kind,value)=>{const k=key(kind);if(k)ls.set(k,value)};
+  const track=t=>({id:t.id,title:String(t.title||''),user:String(t.user||''),thumb:String(t.thumb||''),duration:t.duration});
+  let loading=false,recordedToken=-1,lastSave=0;
+  function saveQueue(){
+    if(loading||!ME||!isSoundCloud(cur()))return;
+    const tracks=queue.filter(isSoundCloud).slice(0,500).map(track);
+    const index=tracks.findIndex(t=>t.id===cur().id);
+    if(index<0)return;
+    write('queue',{tracks,index,position:Math.max(0,Number(a.currentTime)||0),saved:Date.now()});
+  }
+  const oldPlay=play;
+  play=function(){saveQueue();loading=true;let result;
+    try{result=oldPlay.apply(this,arguments)}catch(e){loading=false;throw e}
+    return Promise.resolve(result).finally(()=>{loading=false});
+  };
+  a.addEventListener('playing',()=>{
+    loading=false;
+    if(ME&&isSoundCloud(cur())&&recordedToken!==tok){
+      recordedToken=tok;
+      const rows=read('history',[]);
+      write('history',[{...track(cur()),playedAt:Date.now()},...(Array.isArray(rows)?rows:[])].slice(0,300));
+    }
+    saveQueue();
+  });
+  a.addEventListener('timeupdate',()=>{if(Date.now()-lastSave>5000){lastSave=Date.now();saveQueue()}});
+  a.addEventListener('pause',saveQueue);a.addEventListener('seeked',saveQueue);
+  addEventListener('pagehide',saveQueue);
+  const oldSignOut=signOut;signOut=function(){saveQueue();if($('listenHistory').open)$('listenHistory').close();$('historyRows').replaceChildren();recordedToken=-1;return oldSignOut.apply(this,arguments)};
+  async function resumeQueue(){
+    const saved=read('queue',null);
+    if(!saved||!Array.isArray(saved.tracks)||!isSoundCloud(saved.tracks[saved.index]))return toast('Сохранённой очереди пока нет');
+    const selected=saved.tracks[saved.index];const position=Number(saved.position)||0;
+    const account=key('queue');
+    let expected;
+    const seek=()=>{if(key('queue')===account&&tok===expected&&cur()?.id===selected.id&&isFinite(a.duration))a.currentTime=Math.min(Math.max(0,position),Math.max(0,a.duration-0.5))};
+    a.addEventListener('loadedmetadata',seek,{once:true});
+    try{const job=play(saved.tracks,saved.index);expected=tok;await job;seek()}
+    finally{a.removeEventListener('loadedmetadata',seek)}
+  }
+  const dialog=document.createElement('dialog');dialog.id='listenHistory';
+  dialog.innerHTML='<h2>История прослушиваний</h2><p>На этом устройстве · последние 300 запусков треков</p><div id="historyRows"></div><button type="button" id="historyClear">Очистить историю</button><button type="button" id="historyClose">Закрыть</button>';
+  document.body.appendChild(dialog);
+  dialog.style.cssText='max-width:560px;width:90%;max-height:80vh;overflow:auto;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:20px;padding:20px';
+  function showHistory(){
+    const rows=read('history',[]),box=$('historyRows');box.replaceChildren();
+    if(!Array.isArray(rows)||!rows.length)box.textContent='История пока пуста. Включи любой трек.';
+    else rows.filter(isSoundCloud).forEach(t=>{
+      const b=el('button','abtn');b.type='button';b.style.cssText='display:block;width:100%;text-align:left;margin:8px 0';
+      b.textContent=t.title+' · '+t.user+' — '+new Date(t.playedAt).toLocaleString('ru-RU');
+      b.onclick=()=>{dialog.close();play([t],0)};box.appendChild(b);
+    });
+    if(!dialog.open)dialog.showModal();
+  }
+  $('historyClose').onclick=()=>dialog.close();
+  $('historyClear').onclick=()=>{if(confirm('Очистить историю этого аккаунта на устройстве?')){write('history',[]);showHistory()}};
+  const actions=document.createElement('div');actions.className='waveControls';actions.style.cssText='max-width:none;margin:0 0 20px';
+  function button(label,fn){const b=el('button','',label);b.type='button';b.onclick=fn;actions.appendChild(b)}
+  button('↻ Продолжить очередь',resumeQueue);
+  button('История',showHistory);
+  button('🎲 Что послушать?',()=>{
+    const choices=liked.filter(isSoundCloud).filter(t=>t.id!==cur()?.id);
+    if(!choices.length){toast('Добавь ещё треки SoundCloud в коллекцию');return}
+    play([choices[Math.floor(Math.random()*choices.length)]],0);
+  });
+  waveCard.insertAdjacentElement('afterend',actions);
+  const oldNav=setNav;setNav=function(){oldNav.apply(this,arguments);actions.hidden=mode!=='home'&&mode!=='lib'};
+  setNav();
+})();
+
 </script>
 </body>
 </html>
