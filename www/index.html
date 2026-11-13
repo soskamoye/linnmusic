@@ -485,6 +485,10 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
 .pcols input[type=color]::-webkit-color-swatch-wrapper{padding:0}
 .pcols input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
 #accDlg select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;max-width:100%}
+
+#aAdv{margin-top:2px}
+#aAdv:not([hidden]){animation:fadeUp .35s cubic-bezier(.2,.8,.2,1) backwards}
+#aHelp{display:block;margin:12px auto 0;color:var(--mute);font-size:.84rem;text-decoration:underline;text-underline-offset:3px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -599,10 +603,12 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
 <div id="auth" class="on boot">
   <form class="acard" id="af" novalidate>
     <div class="logo" id="alogo"></div>
+    <div id="aAdv" hidden>
     <label for="aSrv">Сервер</label>
     <input id="aSrv" placeholder="https://….trycloudflare.com" inputmode="url" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
     <label for="aTg">Telegram-канал с адресом сервера</label>
     <input id="aTg" placeholder="@канал (необязательно)" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+    </div>
     <div class="tabs2"><button type="button" class="on" id="aTabIn">Вход</button><button type="button" id="aTabUp">Регистрация</button></div>
     <label for="aLogin">Логин</label>
     <input id="aLogin" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="64">
@@ -616,6 +622,7 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
     </div>
     <div class="aerr" id="aErr" role="alert"></div>
     <button class="go" id="aGo">Войти</button>
+    <button type="button" class="abtn" id="aHelp" hidden>Не подключается?</button>
     <button type="button" class="abtn" id="aOff" hidden>Открыть загрузки без сервера</button>
   </form>
 </div>
@@ -1985,7 +1992,8 @@ async function pTools(b){
   };
 
   /* ---- синхронизация адреса сервера через Telegram ---- */
-  var tgChan=function(){return String(ls.get('tgchan','')||'').replace(/^https?:\/\/t\.me\/(s\/)?/i,'').replace(/^@/,'').replace(/[\/?#].*$/,'').trim()};
+  var TG_DEFAULT='fdioewqewquoifeqijfdwqpjdpwoqkop';
+  var tgChan=function(){return String(ls.get('tgchan','')||TG_DEFAULT).replace(/^https?:\/\/t\.me\/(s\/)?/i,'').replace(/^@/,'').replace(/[\/?#].*$/,'').trim()};
   async function tgFetch(url){
     var H=PL('CapacitorHttp');
     if(H&&H.get){var r=await H.get({url:url,headers:{Accept:'text/html'},connectTimeout:12000,readTimeout:12000});if(r.status&&r.status>=400)throw new Error('HTTP '+r.status);return typeof r.data==='string'?r.data:String(r.data)}
@@ -2018,6 +2026,23 @@ async function pTools(b){
     if(!linnOk)tgSync(false,true);
   },30000);
 
+  /* ---- Android: фоновое воспроизведение (уведомление и кнопки через нативный плагин, только в APK) ---- */
+  var MS=null;
+  try{if(APP&&window.Capacitor.getPlatform&&Capacitor.getPlatform()==='android')MS=PL('MediaSession')}catch(e){}
+  if(MS){
+    var msMeta=function(){var c=cur();if(!c)return;var art=[];if(c.thumb&&/^https?:/i.test(c.thumb))art.push({src:c.thumb,sizes:'512x512',type:'image/jpeg'});try{MS.setMetadata({title:c.title||'',artist:c.user||'',album:'LINNmusic',artwork:art})}catch(e){}};
+    var msState=function(){try{MS.setPlaybackState({playbackState:a.paused?'paused':'playing'})}catch(e){}};
+    var msLast=0,msPos=function(){try{if(a.duration&&isFinite(a.duration))MS.setPositionState({duration:a.duration,position:a.currentTime||0,playbackRate:a.playbackRate||1})}catch(e){}};
+    var msAct=function(act,fn){try{MS.setActionHandler({action:act},fn)}catch(e){}};
+    msAct('play',function(){a.play()});msAct('pause',function(){a.pause()});
+    msAct('nexttrack',function(){step(1)});msAct('previoustrack',function(){step(-1)});
+    msAct('seekto',function(d){if(d&&d.seekTime!=null)a.currentTime=d.seekTime});
+    a.addEventListener('loadedmetadata',function(){msMeta();msPos()});
+    a.addEventListener('playing',function(){msMeta();msState();msPos()});
+    a.addEventListener('pause',function(){msState();msPos()});
+    a.addEventListener('timeupdate',function(){var n=Date.now();if(n-msLast>4000){msLast=n;msPos()}});
+  }
+
   /* ---- настройки: устройство и Telegram ---- */
   var _bs2=buildSettings;
   buildSettings=function(){
@@ -2045,6 +2070,10 @@ async function pTools(b){
   var norm=function(v){v=(v||'').trim().replace(/\/+$/,'');if(v&&!/^https?:\/\//i.test(v))v='https://'+v;return v};
   i.value=(typeof LINN==='string'&&/^https?:/i.test(LINN)&&!/^https?:\/\/localhost\/?$/i.test(LINN))?LINN:'';
   i.addEventListener('input',function(){var v=norm(i.value);if(v){ls.set('linn',v);LINN=v}});
+  var adv=document.getElementById('aAdv'),help=document.getElementById('aHelp'),logo=document.getElementById('alogo'),taps=0,tt=0;
+  if(logo)logo.addEventListener('click',function(){taps++;clearTimeout(tt);tt=setTimeout(function(){taps=0},2500);if(taps>=7){taps=0;adv.hidden=false;help.hidden=true}});
+  if(help)help.addEventListener('click',function(){adv.hidden=false;help.hidden=true});
+  setInterval(function(){if(help&&adv&&adv.hidden)help.hidden=!!linnOk},1500);
   var tg=document.getElementById('aTg');
   if(tg){tg.value=(window.LINN_SYNC&&window.LINN_SYNC.chan())?'@'+window.LINN_SYNC.chan():'';
     tg.addEventListener('change',function(){ls.set('tgchan',tg.value.trim());if(tg.value.trim())window.LINN_SYNC.sync(true,true)})}
