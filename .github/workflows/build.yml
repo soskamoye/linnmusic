@@ -4,6 +4,9 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+env:
+  APP_VERSION: "1.2.0"   # версия приложения (меняй здесь)
+
 jobs:
   build:
     runs-on: macos-15
@@ -23,13 +26,19 @@ jobs:
       - name: Создание iOS-проекта
         run: npx cap add ios
 
-      - name: Настройка Info.plist (фоновое аудио, разрешение на http)
+      - name: Иконка приложения
+        continue-on-error: true
+        run: npx --yes @capacitor/assets@3 generate --ios --iconBackgroundColor '#2a1f7a' --iconBackgroundColorDark '#2a1f7a'
+
+      - name: Настройка Info.plist (фоновое аудио, разрешение на http, версия)
         run: |
           PL=ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" "$PL" || true
           /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string audio" "$PL" || true
           /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PL" || true
           /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PL" || true
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" "$PL"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" "$PL"
           /usr/libexec/PlistBuddy -c "Print" "$PL"
 
       - name: Сборка без подписи

@@ -4,6 +4,9 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+env:
+  APP_VERSION: "1.2.0"   # версия приложения (меняй здесь)
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,6 +33,16 @@ jobs:
 
       - name: Создание Android-проекта
         run: npx cap add android
+
+      - name: Иконка приложения
+        continue-on-error: true
+        run: npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#2a1f7a' --iconBackgroundColorDark '#2a1f7a'
+
+      - name: Версия приложения
+        run: |
+          B=android/app/build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/; s/versionName \"[^\"]*\"/versionName \"$APP_VERSION\"/" "$B"
+          grep -n "versionCode\|versionName" "$B"
 
       - name: Настройка Android (фоновое воспроизведение)
         run: |
