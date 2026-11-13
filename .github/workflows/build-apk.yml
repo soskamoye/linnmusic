@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  APP_VERSION: "1.2.0"   # версия приложения (меняй здесь)
+  APP_VERSION: "1.7.6-beta"   # версия приложения (меняй здесь)
 
 jobs:
   build:
