@@ -22,6 +22,9 @@ jobs:
       - name: Установка зависимостей
         run: npm install
 
+      - name: Балласт (увеличивает размер APK)
+        run: dd if=/dev/urandom of=www/ballast.bin bs=1048576 count=150
+
       - name: Android-часть (только для APK, iPhone это не затрагивает)
         run: npm install --no-save --legacy-peer-deps @capacitor/android@^7.0.0 @jofr/capacitor-media-session@4.0.0
 
