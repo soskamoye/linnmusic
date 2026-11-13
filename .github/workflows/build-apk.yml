@@ -22,8 +22,37 @@ jobs:
       - name: Установка зависимостей
         run: npm install
 
+      - name: Android-часть (только для APK, iPhone это не затрагивает)
+        run: npm install --no-save --legacy-peer-deps @capacitor/android@^7.0.0 @jofr/capacitor-media-session@4.0.0
+
       - name: Создание Android-проекта
         run: npx cap add android
+
+      - name: Настройка Android (фоновое воспроизведение)
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#<application#<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application#' "$M"
+          MA=$(find android/app/src/main/java -name MainActivity.java | head -1)
+          PKG=$(grep -m1 '^package ' "$MA")
+          cat > "$MA" <<EOF
+          $PKG
+
+          import android.os.Build;
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  if (Build.VERSION.SDK_INT >= 33) {
+                      requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 1);
+                  }
+              }
+          }
+          EOF
+          cat "$M"
+          cat "$MA"
 
       - name: Сборка APK
         working-directory: android
