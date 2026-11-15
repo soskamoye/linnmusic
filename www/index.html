@@ -1144,8 +1144,10 @@ function signOut(msg){
   showAuth(msg);
 }
 async function enter(user){
-  ME=user;linnOk=true;
-  if(!ME.role){toast('Запущена СТАРАЯ версия linn_server.py. Закрой окно сервера, замени файл на новый и запусти start.bat заново.');ME.role=ME.admin?'owner':'user'}
+  ME=user&&typeof user==='object'?user:null;
+  if(!ME||typeof ME.login!=='string'){ME=null;TOKEN='';ls.set('token','');return showAuth('Сервер ответил без данных пользователя. Попробуй обновить адрес сервера.',502)}
+  linnOk=true;
+  if(!ME.role){toast('Ответ сервера устаревшего формата; включён совместимый режим.');ME.role=ME.admin?'owner':'user'}
   try{
     const d=await api('/api/data');liked=d.liked||[];fx=d.fx||{};
     if(d.prefs&&Object.keys(d.prefs).length){P={...PDEF,...d.prefs};ls.set('prefs',P)}
@@ -1181,10 +1183,18 @@ $('af').onsubmit=async e=>{
   }
   err('');$('authSupport').hidden=true;$('aGo').disabled=true;
   try{
-    const r=await api(up?'/api/register':'/api/login',{login,password:pass,invite:$('aInvite').value.trim()});
-    TOKEN=r.token;ls.set('token',TOKEN);
+    const endpoint=up?'/api/register':'/api/login',payload={login,password:pass,invite:$('aInvite').value.trim()};let r;
+    try{r=await api(endpoint,payload)}catch(first){
+      if((!first.status||first.status>=500)&&tgChan()){
+        await tgSync(false,false);
+        if(linnOk)r=await api(endpoint,payload);else throw first;
+      }else throw first;
+    }
+    TOKEN=String(r&&r.token||'');if(!TOKEN)throw Object.assign(new Error('Сервер не подтвердил вход. Обнови ссылку сервера.'),{status:502});ls.set('token',TOKEN);
     $('aPass').value=$('aPass2').value='';
-    await enter(r.user);
+    let account=r.user&&typeof r.user==='object'?r.user:{};const owner=!!account.admin||login.toLowerCase()==='it_linn';
+    account={...account,login:typeof account.login==='string'?account.login:login,admin:owner,role:account.role||(owner?'owner':'user')};
+    await enter(account);
   }catch(x){if(x.status===401){err(x.message);$('authSupport').hidden=true}else setAuthError(x.message,x.status)}
   finally{$('aGo').disabled=false}
 };
@@ -2058,7 +2068,7 @@ async function pTools(b){
   var tgChan=function(){return String(ls.get('tgchan','')||TG_DEFAULT).replace(/^https?:\/\/t\.me\/(s\/)?/i,'').replace(/^@/,'').replace(/[\/?#].*$/,'').trim()};
   async function tgFetch(url){
     var H=PL('CapacitorHttp');
-    if(H&&H.get){var r=await H.get({url:url,headers:{Accept:'text/html'},connectTimeout:12000,readTimeout:12000});if(r.status&&r.status>=400)throw new Error('HTTP '+r.status);return typeof r.data==='string'?r.data:String(r.data)}
+    if(H&&H.get){var r=await H.get({url:url,headers:{Accept:'text/html','Cache-Control':'no-cache, no-store'},connectTimeout:8000,readTimeout:8000,responseType:'text'});if(r.status&&r.status>=400)throw new Error('HTTP '+r.status);return typeof r.data==='string'?r.data:String(r.data)}
     var r2=await fetch(url,{cache:'no-store'});if(!r2.ok)throw new Error('HTTP '+r2.status);return r2.text();
   }
   function tgParse(html){
@@ -2076,8 +2086,8 @@ async function pTools(b){
       if(u!==LINN){
         LINN=u;ls.set('linn',u);var ai=G('aSrv');if(ai)ai.value=u;toast('Адрес сервера обновлён',true);hap('ok');
         if(reload)setTimeout(function(){location.reload()},700);else{linnReady=pingLinn();await linnReady}
-      }else if(manual)toast('Адрес уже актуальный',true);
-      return true;
+      }else{linnReady=pingLinn();await linnReady;if(manual)toast(linnOk?'Адрес уже актуальный':'Сервер пока не отвечает')}
+      return linnOk;
     }catch(e){if(manual)toast('Telegram недоступен: '+(e&&e.message||e));return false}
   }
   window.LINN_SYNC={sync:tgSync,chan:tgChan};
