@@ -176,6 +176,7 @@ body.lock #toast{bottom:auto;top:calc(72px + env(safe-area-inset-top))}
 .acard .alink{display:flex;align-items:center;justify-content:center;gap:6px;margin:12px auto 0;color:var(--mute);font-size:.82rem;padding:10px}
 .acard .alink .i{width:16px;height:16px}
 .aerr{min-height:1.3em;color:#ffb3c0;font-size:.85rem;line-height:1.4;margin:0 0 8px 4px}
+.authSupport{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 14px;margin:0 0 12px;border:1px solid rgba(var(--accrgb),.4);border-radius:14px;background:rgba(var(--accrgb),.13);color:var(--text);font-weight:650;text-decoration:none;transition:background .2s,transform .2s}.authSupport:hover{background:rgba(var(--accrgb),.22);transform:translateY(-1px)}.authSupport svg{width:19px;height:19px;color:var(--acc);flex:none}
 .ahint{color:var(--mute);font-size:.78rem;line-height:1.45;margin:-4px 0 12px 4px}
 .role{display:inline-block;background:var(--acc2);color:#2a1408;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px}
 .urow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
@@ -267,9 +268,8 @@ nav button{position:relative}.gear{position:relative}.gear .nb{top:-2px;right:-2
 /* ===== платформа поиска ===== */
 .srcrow{max-width:1100px;width:100%;margin:auto;padding:4px 20px 0}
 .srcsw{display:flex;gap:4px;padding:3px;width:max-content;max-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:999px;position:relative}
-.srcsw::before{content:'';position:absolute;top:3px;bottom:3px;left:3px;width:calc(50% - 5px);border-radius:999px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--acc);transition:transform .32s cubic-bezier(.3,.9,.3,1)}
-.srcsw[data-on=sc]::before{transform:translateX(calc(100% + 4px))}
-.srcsw button{position:relative;z-index:1;flex:1;min-width:104px;padding:7px 14px;border-radius:999px;color:var(--mute);font-weight:600;font-size:.85rem;transition:color .25s,transform .15s}
+.srcsw::before{content:'';position:absolute;top:3px;bottom:3px;left:3px;width:calc(100% - 6px);border-radius:999px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--acc);transition:transform .32s cubic-bezier(.3,.9,.3,1)}
+.srcsw button{position:relative;z-index:1;flex:none;min-width:104px;padding:7px 14px;border-radius:999px;color:var(--mute);font-weight:600;font-size:.85rem;transition:color .25s,transform .15s}
 .srcsw button.on{color:var(--text)}
 /* ===== кнопка «скачать» и эквалайзер ===== */
 .art .dl{top:auto;bottom:6px;right:6px}
@@ -490,6 +490,7 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
 #aAdv:not([hidden]){animation:fadeUp .35s cubic-bezier(.2,.8,.2,1) backwards}
 #aHelp{display:block;margin:12px auto 0;color:var(--mute);font-size:.84rem;text-decoration:underline;text-underline-offset:3px;padding:6px 10px}
 </style>
+<script src="hls.min.js"></script>
 </head>
 <body>
 <div id="ann" hidden></div>
@@ -514,6 +515,7 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
 </svg>
 
 <header>
+  <span id="mobileTitle" aria-live="polite">Главная</span>
   <div class="logo"><svg id="logoSvg" class="mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
   <defs>
     <linearGradient id="gN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d2c4ff"/><stop offset="1" stop-color="#6a4df0"/></linearGradient>
@@ -525,21 +527,27 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
   <polygon points="30.5,34.2 65.5,13.7 65.5,64.1 56.8,69.2 56.8,33 40.3,42.5 40.3,70 30.5,70" fill="url(#gN)"/>
   <ellipse cx="24.4" cy="72.5" rx="11" ry="8" transform="rotate(-35 24.4 72.5)" fill="url(#gH)"/>
 </svg><span>LINN<i>music</i></span></div>
-  <form class="search" id="sf"><input id="q" placeholder="Артист или трек на SoundCloud" autocomplete="off" enterkeyhint="search" autocapitalize="none"><button>Найти</button></form>
+  <form class="search" id="sf"><input id="q" placeholder="Треки, исполнители, альбомы..." autocomplete="off" enterkeyhint="search" autocapitalize="none"><button>Найти</button></form>
   <button class="gear" id="gear" title="Настройки" aria-label="Настройки"><svg class="i"><use href="#i-gear"/></svg></button>
   <button class="gear" id="bell" title="Уведомления" aria-label="Уведомления" hidden><svg class="i"><use href="#i-bell"/></svg><b class="nb" id="bdg" hidden></b></button>
   <button class="gear" id="me" title="Аккаунт" aria-label="Аккаунт" hidden></button>
 </header>
 <nav>
+  <button id="tDiscover" class="nav-mobile"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Главная</span></button>
   <button class="on" id="tHome"><svg class="i"><use href="#i-search"/></svg><span>Поиск</span></button>
   <button id="tLib"><svg class="i"><use href="#i-heart"/></svg><span class="dsk">Моя коллекция</span><span class="mob">Коллекция</span></button>
-  <button id="tDl"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg><span>Загрузки</span></button>
-  <button id="tFr" hidden><svg class="i"><use href="#i-users"/></svg><span>Друзья</span><b class="nb" id="frb" hidden></b></button>
-  <button id="tAdm" hidden><svg class="i"><use href="#i-shield"/></svg><span>Владелец</span></button>
+  <button id="tDl" class="nav-utility"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/></svg><span>Загрузки</span></button>
+  <button id="tFr" class="nav-utility" hidden><svg class="i"><use href="#i-users"/></svg><span>Друзья</span><b class="nb" id="frb" hidden></b></button>
+  <button id="tAdm" class="nav-utility" hidden><svg class="i"><use href="#i-shield"/></svg><span>Владелец</span></button>
+  <button id="tWaveNav" class="nav-mobile"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-8 5 16 3-8h6"/></svg><span>Волна</span></button>
+  <button id="tSettings" class="nav-mobile"><svg class="i"><use href="#i-gear"/></svg><span>Настройки</span></button>
+  <button id="tMore" class="nav-mobile"><svg class="i" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg><span>Ещё</span></button>
 </nav>
-<div class="srcrow" id="srcrow"><span>SoundCloud</span></div>
-<div class="chips" id="chips"></div>
+<div class="srcrow" id="srcrow"><div class="srcsw" id="srcsw" data-on="lin"><button type="button" data-src="lin" class="on" aria-pressed="true">LINNmusic</button></div></div>
+<div class="trend-label" id="trendLabel" hidden>🔥 В тренде</div><div class="chips" id="chips"></div>
 <main id="main"><div class="wrap"><h2 id="h"></h2><div id="view"></div></div></main>
+
+<dialog id="navMore"><h3>Ещё в LINNmusic</h3><p>Дополнительные разделы</p><div class="more-actions"><button type="button" data-open="tDl">↓　Загрузки</button><button type="button" data-open="tFr">♧　Друзья</button><button type="button" data-open="tAdm">⚙　Панель владельца</button><button type="button" id="navMoreClose">Закрыть</button></div></dialog>
 
 <footer>
  <div class="mprog"><i id="mprog"></i></div>
@@ -621,6 +629,7 @@ html[data-theme=light] .eq,html[data-theme=light] .art .rb{background:#ffffffcc;
       <p class="ahint">Логин: 3–24 символа (латиница, цифры, _ . -). Пароль: от 6 символов.</p>
     </div>
     <div class="aerr" id="aErr" role="alert"></div>
+    <a class="authSupport" id="authSupport" href="https://t.me/it_linn" target="_blank" rel="noopener noreferrer" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.5 3.2 2.7 10.5c-.9.4-.9 1.1-.2 1.3l4.8 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8L22.9 4.5c.3-1.3-.5-1.8-1.4-1.3zM8.6 12.9l9.2-5.8c.4-.3.8-.1.5.2l-7.5 6.8-.3 3.3-1.9-4.5z"/></svg><span>Написать в Telegram</span></a>
     <button class="go" id="aGo">Войти</button>
     <button type="button" class="abtn" id="aHelp" hidden>Не подключается?</button>
     <button type="button" class="abtn" id="aOff" hidden>Открыть загрузки без сервера</button>
@@ -650,7 +659,7 @@ const ls={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e)
 const ic=n=>'<svg class="i"><use href="#i-'+n+'"/></svg>';
 const enc=encodeURIComponent;
 const QUICK=['Каспийский Груз','Баста','Скриптонит','Моргенштерн','Miyagi','ЛСП','Каста','Oxxxymiron','Zivert','Макс Корж','Дора','Элджей'];
-let good='', fx={}, list=[], liked=[], queue=[], qi=-1, mode='home', shuffle=false, repeat=false, seeking=false, tok=0, editing=null, TOKEN=ls.get('token',''), ME=null, authMode='in', dirty=false, saveT, toastT, home={q:'',list:[]};
+let good='', fx={}, list=[], liked=[], queue=[], qi=-1, mode='home', navFocus='discover', shuffle=false, repeat=false, seeking=false, tok=0, editing=null, TOKEN=ls.get('token',''), ME=null, authMode='in', dirty=false, saveT, toastT, home={q:'',list:[]};
 let RMIN=.5,RMAX=2,SRV={},sleepT,sleepMin=0;
 const PDEF={autonext:true,hotkeys:true,restore:false,vol:80,accent:'#9b8cff',grid:165,lsize:1.28,autolyr:false,quick:true,hist:true,sort:'new',anim:true,badge:true,showid:false};
 let P={...PDEF,...ls.get('prefs',{})};
@@ -661,7 +670,7 @@ const isLiked=t=>liked.some(x=>x.id===t.id);
 const decode=s=>{const e=document.createElement('textarea');e.innerHTML=s;return e.value};
 const cur=()=>queue[qi];
 function toast(m,ok){const t=$('toast');t.className=ok?'ok':'';t.textContent=ok?m:m+' (нажми, чтобы скрыть)';t.hidden=false;t.onclick=()=>t.hidden=true;clearTimeout(toastT);if(ok)toastT=setTimeout(()=>t.hidden=true,2500)}
-const hint=e=>'Проверь доступность трека SoundCloud и соединение сервера.';
+const hint=e=>'Проверь соединение с сервером и доступность трека.';
 function fillRange(el){el.style.setProperty('--p',((+el.value-+el.min)/((+el.max-+el.min)||1)*100)+'%')}
 // скорость трека: число 0.5–2 (старые значения "slow"/"fast" из прошлых версий переводим)
 const rateOf=id=>{const v=fx[id];if(v==='slow')return .7;if(v==='fast')return 1.5;const n=+v;return n>=RMIN&&n<=RMAX?n:1};
@@ -679,52 +688,72 @@ async function pingLinn(){try{SRV=await tfetch(LINN+'/ping',2500)||{};linnOk=tru
 linnReady=pingLinn();
 function showSrv(){const b=$('ann');b.hidden=!SRV.announce;b.textContent=SRV.announce||'';$('aInviteW').hidden=!SRV.invite}
 linnReady.then(showSrv);
-const isSoundCloud=t=>!!t&&/^sc-[0-9]{1,15}$/.test(t.id);
-let SRC='sc';ls.set('src','sc');
-async function searchTracks(q){
+const isPlayableTrack=t=>!!t&&/^(?:sc-[0-9]{1,15}|au-[A-Za-z0-9_-]{1,64})$/.test(t.id);
+let SRC='lin';ls.set('src',SRC);
+async function searchTracks(q,source=SRC){
   await linnReady;
   if(!linnOk)throw new Error('Нет связи с сервером LINN');
-  try{return (await tfetch(LINN+'/search?q='+enc(q)+'&src=sc&'+tq(),40000)).filter(isSoundCloud)}
+  const endpoint=source==='sc'?'sc':source==='au'?'au':SRC;
+  const ms=source==='au'?12000:18000;
+  try{return (await tfetch(LINN+'/search?q='+enc(q)+'&src='+enc(endpoint)+'&'+tq(),ms)).filter(isPlayableTrack)}
   catch(e){if(e.status===401)sessionLost();throw e}
 }
-async function resolve(id,tried){throw new Error('SoundCloud: сервер недоступен или трек не удалось загрузить')}
+async function resolve(id,tried){throw new Error('Сервер не смог получить поток')}
+let activeHls=null;
 function tryAudio(url,ms=12000){
   return new Promise(res=>{
     let done=false,to;
-    const fin=v=>{if(done)return;done=true;clearTimeout(to);a.removeEventListener('canplay',ok);a.removeEventListener('error',bad);res(v)};
+    const fin=v=>{if(done)return;done=true;clearTimeout(to);a.removeEventListener('canplay',ok);a.removeEventListener('error',bad);if(!v&&activeHls){activeHls.destroy();activeHls=null}res(v)};
     const ok=()=>{a.play().catch(e=>{if(e&&e.name==='NotAllowedError')$('ar').textContent='Нажми Play, чтобы начать'});fin(true)};
     const bad=()=>fin(false);
     to=setTimeout(bad,ms);
     a.addEventListener('canplay',ok);a.addEventListener('error',bad);
-    a.src=url;applyFx();a.load();
+    if(activeHls){activeHls.destroy();activeHls=null}
+    const isSC=/\/stream\/sc-[0-9]+/.test(url),NativeHls=a.canPlayType('application/vnd.apple.mpegurl');
+    if(isSC&&window.Hls&&Hls.isSupported()){
+      const h=new Hls({enableWorker:true,lowLatencyMode:false,maxBufferLength:24,backBufferLength:12});activeHls=h;
+      h.on(Hls.Events.ERROR,(_,d)=>{if(d&&d.fatal)bad()});
+      h.on(Hls.Events.MEDIA_ATTACHED,()=>h.loadSource(url));h.attachMedia(a);applyFx();
+    }else{a.src=url;applyFx();a.load()}
   });
 }
 let searchToken=0;
 async function run(q){
   const request=++searchToken;
   if(P.hist){ls.set('hist',[q,...ls.get('hist',[]).filter(x=>x!==q)].slice(0,8));drawChips()}
-  mode='home';setNav();$('h').textContent='Результаты: '+q;$('view').textContent='Ищу в SoundCloud…';
-  try{const found=await searchTracks(q);if(request!==searchToken||mode!=='home')return;list=found;home={q,list};draw('Ничего не нашлось. Попробуй другой запрос.')}
-  catch(e){if(request!==searchToken||mode!=='home')return;$('view').textContent='Поиск SoundCloud не сработал. Проверь адрес и соединение сервера. '+e.message}
+  mode='home';navFocus='search';home.q=q;setNav();$('h').textContent='Результаты: '+q;$('view').textContent='Ищу музыку…';
+  let audius=[],sound=[],finished=0,errors=[];
+  const paint=()=>{if(request!==searchToken||mode!=='home')return;list=[...audius,...sound];home={q,list};draw(list.length?'':'Ищу в другом каталоге…')};
+  await Promise.all(['au','sc'].map(source=>searchTracks(q,source).then(rows=>{
+    if(source==='au')audius=rows.slice(0,3);else sound=rows;
+    finished++;paint();
+  }).catch(e=>{finished++;errors.push(e);paint()})));
+  if(request!==searchToken||mode!=='home')return;
+  if(!list.length)$('view').textContent=errors.length===2?'Поиск не ответил. Проверь соединение с сервером.':'Ничего не нашлось. Попробуй другой запрос.';
 }
 $('sf').onsubmit=e=>{e.preventDefault();const q=$('q').value.trim();$('q').blur();if(q)run(q)};
 function drawChips(){const c=$('chips');c.innerHTML='';[...(P.hist?ls.get('hist',[]):[]),...QUICK].forEach(n=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{$('q').value=n;run(n)};c.appendChild(b)})}
 drawChips();
 
 /* ---------- вкладки и список ---------- */
-const sortedLib=()=>{const l=liked.filter(isSoundCloud);if(P.sort==='old')return l.reverse();if(P.sort==='title')return l.sort((x,y)=>x.title.localeCompare(y.title));if(P.sort==='artist')return l.sort((x,y)=>(x.user||'').localeCompare(y.user||''));return l};
+const sortedLib=()=>{const l=liked.filter(isPlayableTrack);if(P.sort==='old')return l.reverse();if(P.sort==='title')return l.sort((x,y)=>x.title.localeCompare(y.title));if(P.sort==='artist')return l.sort((x,y)=>(x.user||'').localeCompare(y.user||''));return l};
 const HINT='Введи артиста или название. Или выбери исполнителя сверху.';
-function setNav(){$('tHome').classList.toggle('on',mode==='home');$('tLib').classList.toggle('on',mode==='lib');$('tAdm').classList.toggle('on',mode==='adm');$('tFr').classList.toggle('on',mode==='fr');$('chips').style.display=mode==='home'&&P.quick?'':'none'}
+function setNav(){const discovery=mode==='home'&&!home.q&&navFocus!=='search',searching=mode==='home'&&(!!home.q||navFocus==='search');$('tDiscover').classList.toggle('on',discovery);$('tWaveNav').classList.toggle('on',mode==='home'&&navFocus==='wave');$('tHome').classList.toggle('on',searching);$('tLib').classList.toggle('on',mode==='lib');$('tAdm').classList.toggle('on',mode==='adm');$('tFr').classList.toggle('on',mode==='fr');const showChips=mode==='home'&&P.quick&&(navFocus==='search'||!!home.q);$('chips').style.display=showChips?'':'none';$('trendLabel').hidden=!showChips}
+$('tDiscover').onclick=()=>{mode='home';navFocus='discover';home.q='';list=[];$('h').textContent='Главная';setNav();draw();window.scrollTo(0,0)};
+$('tWaveNav').onclick=()=>{mode='home';navFocus='wave';home.q='';list=[];$('h').textContent='Главная';setNav();draw();setTimeout(()=>$('myWave').scrollIntoView({behavior:P.anim?'smooth':'auto',block:'start'}),40)};
+$('tSettings').onclick=()=>$('gear').click();
+$('tMore').onclick=()=>{const d=$('navMore');d.querySelectorAll('[data-open]').forEach(b=>{const target=$(b.dataset.open);b.hidden=!target||target.hidden});d.showModal()};
+$('navMoreClose').onclick=()=>$('navMore').close();$('navMore').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{$('navMore').close();$(b.dataset.open).click()});
 $('tHome').onclick=()=>{
-  if(mode==='home'){window.scrollTo(0,0);$('main').scrollTop=0;$('q').focus();return}
-  mode='home';setNav();
+  if(mode==='home'){navFocus='search';setNav();window.scrollTo(0,0);$('main').scrollTop=0;$('q').focus();return}
+  mode='home';navFocus='search';setNav();
   if(home.q){$('h').textContent='Результаты: '+home.q;list=home.list}else{$('h').textContent='Найди любую песню';list=[]}
   draw();
 };
 $('tLib').onclick=()=>{mode='lib';setNav();$('h').textContent='Моя коллекция';list=sortedLib();draw('Тут пока пусто. Нажми на сердечко на обложке, и трек появится здесь.');window.scrollTo(0,0)};
 function draw(emptyMsg){
   if(mode==='adm'||mode==='fr')return;
-  const v=$('view');
+  const v=$('view');v.classList.toggle('library-view',mode==='lib');
   if(!list.length){v.innerHTML='<p class="msg">'+(emptyMsg||HINT)+'</p>';return}
   const g=document.createElement('div');g.className='grid';
   list.forEach((t,i)=>{
@@ -914,7 +943,7 @@ async function lyrLoad(q){
     if(my!==lyrTok)return;
     const lines=r.synced?parseLrc(r.synced):[];
     if(r.found&&(lines.length||r.plain))lyr={id:t.id,state:'ok',lines:lines.length?lines:null,plain:r.plain||'',info:(r.artist?r.artist+' — ':'')+(r.title||''),idx:-1};
-    else lyr={id:t.id,state:'none'};
+    else lyr={id:t.id,state:'none',geniusUrl:r.genius_url||''};
     lyrCache[t.id]=lyr;
   }catch(e){
     if(my!==lyrTok)return;
@@ -941,7 +970,9 @@ function lyrRender(){
   }
   if(lyr.state==='none'){
     b.classList.add('plainbox');w.appendChild(mk('div','lmsg','Текст этого трека не нашёлся. Попробуй найти вручную:'));
-    ft.appendChild(lyrForm());return;
+    ft.appendChild(lyrForm());
+    if(lyr.geniusUrl){const a=document.createElement('a');a.className='llink';a.href=lyr.geniusUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Открыть страницу трека в Genius';ft.appendChild(a)}
+    return;
   }
   if(lyr.lines){
     lyr.lines.forEach(l=>{const p=mk('p','ln'+(l.s?'':' gap'),l.s||'· · ·');p.onclick=()=>{a.currentTime=l.t;lyrScrollAt=0};w.appendChild(p)});
@@ -1009,7 +1040,7 @@ function buildSettings(){
   }
 }
 applyPrefs();
-function restoreLast(){if(!P.restore||qi>=0)return;const t=ls.get('last',null);if(isSoundCloud(t)){queue=[t];qi=0;$('ti').textContent=t.title;$('ar').textContent=t.user||'';$('cov').src=t.thumb||'';$('cov').hidden=!t.thumb;$('ph').hidden=!!t.thumb}}
+function restoreLast(){if(!P.restore||qi>=0)return;const t=ls.get('last',null);if(isPlayableTrack(t)){queue=[t];qi=0;$('ti').textContent=t.title;$('ar').textContent=t.user||'';$('cov').src=t.thumb||'';$('cov').hidden=!t.thumb;$('ph').hidden=!!t.thumb}}
 
 /* ---------- настройки ---------- */
 
@@ -1046,9 +1077,16 @@ function setAuthMode(m){
   authMode=m;const up=m==='up';
   $('aTabIn').classList.toggle('on',!up);$('aTabUp').classList.toggle('on',up);
   $('aUp').hidden=!up;$('aGo').textContent=up?'Создать аккаунт':'Войти';
-  $('aPass').autocomplete=up?'new-password':'current-password';$('aErr').textContent='';
+  $('aPass').autocomplete=up?'new-password':'current-password';$('aErr').textContent='';$('authSupport').hidden=true;
 }
-function showAuth(msg){setAuthMode('in');$('aErr').textContent=msg||'';$('auth').classList.remove('boot');$('auth').classList.add('on')}
+const AUTH_SERVER_ERROR='ОШИБКА СЕРВЕРА, при ее возникновении обратитесь к администратору проекта';
+function setAuthError(msg,status){
+  const text=String(msg||''),serverError=Number(status)>=500||/нет связи с сервером|ошибка сервера|запусти start\.bat|сервер не отвечает|failed to fetch|networkerror|fetch failed/i.test(text);
+  $('aErr').textContent=serverError?AUTH_SERVER_ERROR:text;
+  const link=$('authSupport');link.hidden=!serverError;
+  if(serverError){const fromSettings=$('dlg').querySelector('.tg');if(fromSettings&&fromSettings.href)link.href=fromSettings.href}
+}
+function showAuth(msg,status){setAuthMode('in');setAuthError(msg,status);$('auth').classList.remove('boot');$('auth').classList.add('on')}
 function sessionLost(){signOut('Сессия истекла. Войди снова.')}
 function signOut(msg){
   clearTimeout(saveT);dirty=false;tok++;lyrTok++;
@@ -1075,12 +1113,12 @@ async function enter(user){
   }catch(e){
     ME=null;liked=[];fx={};
     if(e.status===401){TOKEN='';ls.set('token','')}
-    return showAuth(e.status===401?'':'Не удалось загрузить коллекцию: '+e.message);
+    return showAuth(e.status===401?'':'Не удалось загрузить коллекцию: '+e.message,e.status);
   }
   $('auth').classList.remove('on','boot');
   $('me').hidden=false;paintMe();$('tAdm').hidden=!ME.admin;$('tFr').hidden=ME.admin;$('bell').hidden=ME.admin;$('me').dataset.role=ME.role;startPoll();
   RMIN=isTester()?.25:.5;RMAX=isTester()?3:2;rebuildSp();applyPrefs();drawChips();restoreLast();
-  home={q:'',list:[]};mode='home';setNav();$('h').textContent='Найди любую песню';list=[];draw();
+  home={q:'',list:[]};mode='home';navFocus='discover';setNav();$('h').textContent='Главная';list=[];draw();
   route();
 }
 $('alogo').innerHTML=document.querySelector('.logo').innerHTML.replace(/ id="logoSvg"/,'').replace(/id="g(\w)"/g,'id="ag$1"').replace(/url\(#g(\w)\)/g,'url(#ag$1)');
@@ -1095,13 +1133,13 @@ $('af').onsubmit=async e=>{
     if(pass.length<6)return err('Пароль должен быть не короче 6 символов.');
     if(pass!==$('aPass2').value)return err('Пароли не совпадают.');
   }
-  err('');$('aGo').disabled=true;
+  err('');$('authSupport').hidden=true;$('aGo').disabled=true;
   try{
     const r=await api(up?'/api/register':'/api/login',{login,password:pass,invite:$('aInvite').value.trim()});
     TOKEN=r.token;ls.set('token',TOKEN);
     $('aPass').value=$('aPass2').value='';
     await enter(r.user);
-  }catch(x){err(x.message)}
+  }catch(x){if(x.status===401){err(x.message);$('authSupport').hidden=true}else setAuthError(x.message,x.status)}
   finally{$('aGo').disabled=false}
 };
 $('me').onclick=()=>{if(ME)openAcc()};
@@ -1247,12 +1285,21 @@ async function pSess(b){
   d.sessions.forEach(s=>{const r=arow(s.login+(s.admin?' (владелец)':''),'действует до '+dt(s.exp));abt(r,'Завершить',()=>adm('revoke',{id:s.id}),'del');b.appendChild(r)});
 }
 async function pSet(b){
-  const d=(await adm('settings')).settings;if(mode!=='adm')return;
+  const d=(await adm('settings')).settings,genius=await adm('genius');if(mode!=='adm')return;
   [['reg_open','sw','Регистрация открыта'],['maintenance','sw','Технические работы (входит только владелец)'],['search_on','sw','Поиск включён'],['lyrics_on','sw','Тексты песен включены'],
    ['announce','txt','Объявление для всех (пусто — скрыть)'],['invite_code','txt','Код приглашения (пусто — не нужен)'],['search_limit','num','Результатов в поиске (5–50)'],['max_liked','num','Макс. треков в коллекции'],['session_days','num','Срок сессии, дней']].forEach(([k,t,l])=>{
     const push=async v=>{try{await adm('settings',{[k]:v});toast('Сохранено',true)}catch(e){}};
     let c;if(t==='sw')c=mkSw(!!d[k],push);else{c=el('input','tin');c.type=t==='num'?'number':'text';c.value=d[k];c.onchange=()=>push(t==='num'?+c.value:c.value)}
     b.appendChild(mkRow(l,c))});
+  const card=el('section','genius-card');
+  card.style.cssText='margin:24px 0;padding:20px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 16%,var(--panel)),var(--panel));box-shadow:0 12px 34px #0002';
+  card.appendChild(el('h3','','Genius · запасной поиск'));
+  const note=el('p','msg','Если основной поиск не нашёл текст, LINNmusic найдёт страницу песни в Genius и покажет ссылку. Genius API не выдаёт полный текст. Токен хранится на сервере.');note.style.maxWidth='680px';card.appendChild(note);
+  const field=el('input','tin');field.type='password';field.autocomplete='new-password';field.placeholder=genius.configured?'Токен уже сохранён · вставь новый для замены':'Вставь Client Access Token';field.setAttribute('aria-label','Genius Client Access Token');field.style.cssText='display:block;width:100%;max-width:560px;margin:12px 0;padding:13px 15px;border-radius:13px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit';card.appendChild(field);
+  const status=el('div','msg',genius.configured?'Подключён · токен скрыт':'Не подключён');status.style.margin='8px 0 12px';card.appendChild(status);
+  const save=el('button','abtn','Сохранить токен');save.type='button';save.onclick=async()=>{if(!field.value.trim()){status.textContent='Вставь токен из Genius и нажми «Сохранить токен»';field.focus();return}save.disabled=true;try{const r=await adm('genius',{token:field.value.trim()});field.value='';field.placeholder='Токен сохранён · вставь новый для замены';status.textContent=r.configured?'Подключён · токен сохранён на сервере':'Не подключён';toast('Токен Genius сохранён на сервере',true)}catch(e){status.textContent='Не удалось сохранить токен'}finally{save.disabled=false}};card.appendChild(save);
+  if(genius.configured){const clear=el('button','abtn','Удалить токен');clear.type='button';clear.style.marginLeft='8px';clear.onclick=async()=>{if(!confirm('Удалить сохранённый токен Genius?'))return;try{const r=await adm('genius',{clear:true});status.textContent=r.configured?'Подключён через переменную сервера':'Не подключён';field.placeholder=r.configured?'Токен задан на сервере · поле не меняет его':'Вставь Client Access Token';toast(r.configured?'Переменная сервера продолжает задавать токен':'Токен Genius удалён',true)}catch(e){}};card.appendChild(clear)}
+  b.appendChild(card);
 }
 async function pLogs(b){
   const d=await adm('logs');if(mode!=='adm')return;
@@ -1280,7 +1327,7 @@ async function pTools(b){
 (async()=>{
   if(!TOKEN)return showAuth();
   try{await enter(await api('/api/me'))}
-  catch(e){if(e.status===401){TOKEN='';ls.set('token','');showAuth()}else showAuth(e.message)}
+  catch(e){if(e.status===401){TOKEN='';ls.set('token','');showAuth()}else showAuth(e.message,e.status)}
 })();
 </script>
 <script>
@@ -1293,7 +1340,7 @@ async function pTools(b){
 
   /* ---------- платформа поиска ---------- */
   var sw=G('srcsw'),row=G('srcrow'),chips=G('chips'),q=G('q');
-  SRC='sc';ls.set('src','sc');q.placeholder='Артист или трек на SoundCloud';
+  SRC='lin';ls.set('src',SRC);q.placeholder='Артист или название трека';
 
   /* ---------- хранилище загрузок (IndexedDB) ---------- */
   var DLOK=!!window.indexedDB,DL={},DLM={},TR={},prog={},Q=[],busy=false,ABORT={},URLS={},UORD=[],BADLOCAL={},DBP=null;
@@ -1307,7 +1354,7 @@ async function pTools(b){
     t.oncomplete=function(){res(out&&out.result)};t.onerror=t.onabort=function(){rej(t.error||new Error('Хранилище недоступно'))};
   })})}
   function dlTracks(){return tx('meta','readonly',function(t){return t.objectStore('meta').getAll()}).then(function(a){
-    a=(a||[]).filter(isSoundCloud).sort(function(x,y){return y.ts-x.ts});
+    a=(a||[]).filter(isPlayableTrack).sort(function(x,y){return y.ts-x.ts});
     return a.map(function(m){return {id:m.id,title:m.title,user:m.user,thumb:m.thumb,duration:m.duration,size:m.size}})})}
   function dlIndex(){return dlTracks().then(function(a){DL={};DLM={};a.forEach(function(m){DL[m.id]=1;DLM[m.id]=m});refresh();return a})}
   function dlDelete(id){
@@ -1326,7 +1373,7 @@ async function pTools(b){
 
   /* ---------- скачивание ---------- */
   function dlStart(t){
-    if(!isSoundCloud(t))return;
+    if(!isPlayableTrack(t))return;
     if(DL[t.id]||prog[t.id]!=null)return;
     prog[t.id]=-1;Q.push(t);refresh();
     try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
@@ -1357,7 +1404,7 @@ async function pTools(b){
     var ctrl=new AbortController();ABORT[t.id]=ctrl;
     var guard=setTimeout(function(){ctrl.abort()},240000);
     try{
-      var r=await fetch(LINN+'/stream/'+t.id+'?'+tq(),{signal:ctrl.signal});
+      var r=await fetch(LINN+'/dl/'+t.id+'?n='+encodeURIComponent(t.user+' - '+t.title)+'&'+tq(),{signal:ctrl.signal});
       if(!r.ok){var er=new Error('HTTP '+r.status);er.status=r.status;throw er}
       var total=+r.headers.get('Content-Length')||0,ct=r.headers.get('Content-Type')||'';
       var type=/^(audio|video)\//.test(ct)?ct:'audio/mp4',parts=[],got=0;
@@ -1450,7 +1497,7 @@ async function pTools(b){
       info.textContent=txt})}
     upd();
     var all=el('button','abtn','Скачать всю коллекцию');all.type='button';
-    all.onclick=function(){var n=0;(liked||[]).filter(isSoundCloud).forEach(function(t){if(!DL[t.id]&&prog[t.id]==null){TR[t.id]=t;dlStart(t);n++}});toast(n?'Добавлено в очередь: '+n:'Вся коллекция уже скачана',true)};
+    all.onclick=function(){var n=0;(liked||[]).filter(isPlayableTrack).forEach(function(t){if(!DL[t.id]&&prog[t.id]==null){TR[t.id]=t;dlStart(t);n++}});toast(n?'Добавлено в очередь: '+n:'Вся коллекция уже скачана',true)};
     b.appendChild(all);
     var del=el('button','abtn','Удалить все загрузки');del.type='button';
     del.onclick=function(){if(!Object.keys(DL).length||!confirm('Удалить все скачанные треки?'))return;
@@ -1570,7 +1617,7 @@ async function pTools(b){
   addEventListener('scroll',unpress,{capture:true,passive:true});
 
   /* ---- перевод интерфейса ---- */
-  var EN={"Поиск": "Search", "Коллекция": "Library", "Загрузки": "Downloads", "Друзья": "Friends", "Панель владельца": "Owner panel", "Настройки": "Settings", "Обзор": "Browse", "Найти": "Find", "Вход": "Sign in", "Войти": "Sign in", "Выйти": "Sign out", "Регистрация": "Sign up", "Создать аккаунт": "Create account", "Логин": "Username", "Пароль": "Password", "Повтори пароль": "Repeat password", "Код приглашения": "Invite code", "Назад": "Back", "Дальше": "Next", "Закрыть": "Close", "Готово": "Done", "Отменить": "Cancel", "Удалить": "Delete", "Очистить": "Clear", "Принять": "Accept", "Отклонить": "Decline", "Сохранено": "Saved", "Сервер": "Server", "Аккаунт": "Account", "Заметка": "Note", "Статус": "Status", "Цвет": "Color", "Текст": "Lyrics", "Пусто": "Empty", "Свернуть": "Collapse", "Найди любую песню": "Find any song", "Недавно играли": "Recently played", "Результаты: ": "Results: ", "Результаты": "Results", "Показано: ": "Showing: ", "Ищу…": "Searching…", "Ищу текст…": "Looking for lyrics…", "Загружаю…": "Loading…", "Секунду": "One sec", "Ничего не играет": "Nothing playing", "Выбери трек": "Pick a track", "Играть / пауза": "Play / pause", "Перемешать": "Shuffle", "Повтор": "Repeat", "Повторить": "Repeat", "Перемотка": "Seek", "Громкость": "Volume", "Громкость по умолчанию": "Default volume", "Открыть плеер": "Open player", "Текст песни": "Song lyrics", "В коллекцию": "Add to library", "Скорость и тон": "Speed and pitch", "Сбросить на 1×": "Reset to 1×", "Оригинальная скорость и тональность": "Original speed and key", "полутона": "semitones", "Скорость": "Speed", "Тон ": "Pitch ", "Играть далее": "Play next", "В очередь": "Add to queue", "Очередь пуста": "Queue is empty", "Очередь": "Queue", "Очистить очередь": "Clear queue", "Ещё": "More", "Играть": "Play", "Добавлено: играет следующим": "Added: plays next", "Добавлено в очередь": "Added to queue", "Убрать из коллекции": "Remove from library", "Скопировать ссылку": "Copy link", "Ссылка скопирована": "Link copied", "Сохранить на телефон": "Save to phone", "Готовлю файл…": "Preparing file…", "Не удалось сохранить файл: ": "Could not save the file: ", "Нет связи с сервером LINN.": "No connection to the LINN server.", "Нажми Play, чтобы начать": "Press Play to start", "Сначала запусти любой трек": "Start any track first", "Выбери трек, и здесь появится его текст.": "Pick a track and its lyrics will appear here.", "Не тот текст?": "Wrong lyrics?", "Не удалось получить текст. Проверь, что сервер LINN запущен.": "Could not get the lyrics. Make sure the LINN server is running.", "Текст этого трека не нашёлся. Попробуй найти вручную:": "Lyrics for this track were not found. Try searching manually:", "Ползунок меняет скорость и тональность вместе, как на пластинке. Настройка запоминается для этого трека.": "The slider changes speed and pitch together, like a record. The setting is remembered for this track.", "Тебе доступна скорость и тон 0.25×–3×, а также функции ниже.": "Speed and pitch 0.25×–3× and the features below are available to you.", "Таймер сна: пауза": "Sleep timer: paused", "Таймер сна: ": "Sleep timer: ", "Таймер сна": "Sleep timer", " мин": " min", "1 час": "1 hour", "1.5 часа": "1.5 hours", "Выкл": "Off", "Моя коллекция": "My library", "Пока пусто.": "Nothing here yet.", "Тут пока пусто. Нажми на сердечко на обложке, и трек появится здесь.": "Nothing here yet. Tap the heart on a cover and the track will appear here.", "Тут пока пусто. Нажми на стрелку на обложке трека, и он сохранится в приложении.": "Nothing here yet. Tap the arrow on a track cover to save it in the app.", "Скачано: ": "Downloaded: ", "Скачать в приложение": "Download to the app", "Скачано. Нажми, чтобы удалить": "Downloaded. Tap to delete", "Отменить загрузку": "Cancel download", "Удалить загрузку": "Delete download", "Удалить из загрузок: ": "Delete from downloads: ", "Удалить все скачанные треки?": "Delete all downloaded tracks?", "Удалить все загрузки": "Delete all downloads", "Скачать всю коллекцию": "Download whole library", "Добавлено в очередь: ": "Added to queue: ", "Вся коллекция уже скачана": "The whole library is already downloaded", "Не скачалось: ": "Download failed: ", "нет места в хранилище": "not enough storage", "пустой ответ сервера": "empty server response", "Нет связи с сервером LINN, скачать не получится.": "No connection to the LINN server, can't download.", "Открыть загрузки без сервера": "Open downloads without server", "Офлайн: играют только скачанные треки. Чтобы войти в аккаунт, перезапусти приложение.": "Offline: only downloaded tracks play. Restart the app to sign in.", " · всего занято ": " · total used ", "Считаю…": "Counting…", "Это устройство": "This device", "Тема": "Theme", "Язык": "Language", "Тёмная": "Dark", "AMOLED (чёрная)": "AMOLED (black)", "Светлая": "Light", "Как в системе": "System", "Живой фон в плеере": "Live background in player", "Вибрация при нажатиях": "Haptics on tap", "Голубой": "Blue", "Сиреневый": "Lilac", "Жёлтый": "Yellow", "Синхронизация сервера": "Server sync", "Адрес сервера берётся из последнего сообщения в открытом Telegram-канале": "The server address is taken from the last message in a public Telegram channel", "Проверить сейчас": "Check now", "Укажи канал Telegram": "Enter a Telegram channel", "В канале не нашёл адрес сервера": "No server address found in the channel", "Адрес сервера обновлён": "Server address updated", "Адрес уже актуальный": "Address is already up to date", "Telegram недоступен: ": "Telegram unavailable: ", "Артист или трек на SoundCloud": "Artist, track or SoundCloud link", "Артист или трек на SoundCloud": "Artist or track on SoundCloud", "Введи артиста или название. Или выбери исполнителя сверху.": "Enter an artist or title. Or pick an artist above.", "Ничего не нашлось. Попробуй другой запрос.": "Nothing found. Try another query.", "Поиск не сработал": "Search failed", "Поиск включён": "Search enabled", "Трек по ссылке": "Track from link", "Не удалось загрузить. Запусти start.bat (свой сервер) или проверь адрес сервера в настройках": "Could not load. Run start.bat (your own server) or check the server address in settings", "Нет связи с сервером LINN. Запусти start.bat или проверь адрес в настройках.": "No connection to the LINN server. Run start.bat or check the address in settings.", "Сервер LINN не смог взять звук. ": "The LINN server could not get the audio. ", "Подробности в чёрном окне сервера.": "Details are in the server's black window.", "SoundCloud просит подтвердить, что ты не бот.": "SoundCloud asks to confirm you are not a bot.", "Скорее всего, yt-dlp не хватает Deno: закрой окно сервера и запусти start.bat заново.": "Most likely yt-dlp is missing Deno: close the server window and run start.bat again.", "Открой настройки (шестерёнка вверху) и вставь адрес другого сервера LINN или ключ SoundCloud Data API. Ссылку на трек с SoundCloud можно вставить в строку поиска.": "Open settings (gear at the top) and paste another LINN server address or a SoundCloud Data API key. You can paste a SoundCloud track link into the search bar.", "Запущена СТАРАЯ версия linn_server.py. Закрой окно сервера, замени файл на новый и запусти start.bat заново.": "An OLD version of linn_server.py is running. Close the server window, replace the file with the new one and run start.bat again.", "нет ответа от серверов": "no response from servers", "поисковые сервера не отвечают": "search servers are not responding", "сессия истекла": "session expired", "Сессия истекла. Войди снова.": "Session expired. Sign in again.", "Ошибка сервера (": "Server error (", "Сервер временно недоступен": "Server temporarily unavailable", "Эта платформа работает только через сервер LINN": "This platform only works through the LINN server", "SoundCloud работает только через сервер LINN": "SoundCloud only works through the LINN server", "Воспроизведение": "Playback", "Автопереход к следующему треку": "Auto-play next track", "Помнить последний трек и громкость": "Remember last track and volume", "Горячие клавиши (←/→, N, P, M, L)": "Hotkeys (←/→, N, P, M, L)", "Бейдж скорости на обложках": "Speed badge on covers", "Внешний вид": "Appearance", "Цвет акцента": "Accent color", "Размер карточек": "Card size", "Размер текста": "Text size", "Анимации": "Animations", "Мелкие": "Small", "Обычные": "Normal", "Крупные": "Large", "Мелкий": "Small", "Обычный": "Normal", "Крупный": "Large", "Фиолетовый": "Purple", "Розовый": "Pink", "Бирюзовый": "Teal", "Персиковый": "Peach", "Зелёный": "Green", "Красный": "Red", "Открывать текст вместе с плеером": "Open lyrics with the player", "Поиск и коллекция": "Search and library", "Быстрые исполнители и история": "Quick artists and history", "Запоминать историю поиска": "Remember search history", "Сортировка коллекции": "Library sorting", "Сначала новые": "Newest first", "Сначала старые": "Oldest first", "По названию": "By title", "По исполнителю": "By artist", "Данные и аккаунт": "Data and account", "Сменить пароль": "Change password", "Текущий пароль:": "Current password:", "Новый пароль (от 6 символов):": "New password (6+ characters):", "Пароль изменён": "Password changed", "Экспорт коллекции (JSON)": "Export library (JSON)", "Очистить коллекцию ": "Clear library ", " вместе с коллекцией?": " along with the library?", "Очистить историю поиска": "Clear search history", "Сбросить настройки": "Reset settings", "Отправить баг-репорт или идею": "Send a bug report or idea", "Опиши проблему или идею:": "Describe the problem or idea:", "Отправлено владельцу, спасибо!": "Sent to the owner, thank you!", "Поддержка": "Support", "Написать в Telegram": "Write on Telegram", "Показывать ID трека": "Show track ID", "Тексты песен включены": "Lyrics enabled", "Лаборатория ТЕСТЕРОВЩИКА": "TESTER lab", "ТЕСТЕРОВЩИК": "TESTER", "Не удалось сохранить коллекцию: ": "Could not save the library: ", "Не удалось загрузить коллекцию: ": "Could not load the library: ", "Имя и статус": "Name and status", "Имя в профиле (необязательно)": "Profile name (optional)", "Статус / о себе": "Status / about me", "Аватар": "Avatar", "Сохранить профиль": "Save profile", "Профиль сохранён": "Profile saved", "Фото профиля": "Profile photo", "Загрузить фото": "Upload photo", "Убрать фото": "Remove photo", "Загрузить баннер": "Upload banner", "Убрать баннер": "Remove banner", "Баннер": "Banner", "Цвет ника": "Name color", "Эффект ника": "Name effect", "Без эффекта": "No effect", "Свечение": "Glow", "Радуга": "Rainbow", "Градиент": "Gradient", "Не удалось открыть картинку": "Could not open the image", "Добавить в друзья": "Add friend", "Удалить из друзей": "Remove friend", "Поиск по логину…": "Search by username…", "Найти человека по нику или логину…": "Find a person by nickname or username…", "Найди друзей по нику.": "Find friends by nickname.", "Никого не нашлось.": "Nobody found.", "Пока никого": "Nobody yet", "Входящие заявки": "Incoming requests", "Исходящие заявки": "Outgoing requests", "Заявка отправлена — отменить": "Request sent — cancel", "Уведомления": "Notifications", "Уведомлений нет.": "No notifications.", "Отметить всё прочитанным": "Mark all as read", "Не беспокоить": "Do not disturb", "Невидимка": "Invisible", "В сети": "Online", "Отошёл": "Away", "не в сети": "offline", "Блок": "Block", "Заблокировать": "Block", "Разблокировать": "Unblock", "Заблокировано": "Blocked", "Заблокированные": "Blocked users", "Владелец": "Owner", " (владелец)": " (owner)", "Владелец проекта LINNmusic": "LINNmusic project owner", "Пользователи": "Users", "Пользователь": "User", "Пользователей": "Users", "Тестеров": "Testers", "Репорты": "Reports", "Репортов": "Reports", "Репортов от тестеров пока нет.": "No reports from testers yet.", "Стримов": "Streams", "Поисков": "Searches", "Текстов": "Lyrics", "Входов": "Logins", "Неудачных входов": "Failed logins", "Активных сессий": "Active sessions", "Аптайм": "Uptime", "Новых за 24 ч": "New in 24h", "Треков в коллекциях": "Tracks in libraries", "Самые частые треки в коллекциях": "Most common tracks in libraries", "Обслуживание": "Maintenance", "Сессии": "Sessions", "Журнал": "Log", "Журнал пуст.": "Log is empty.", "Журнал очищен": "Log cleared", "Очистить журнал": "Clear log", "Фильтр: login, admin, reg…": "Filter: login, admin, reg…", "Выкинуть": "Kick out", "Завершить": "End", "Завершить все, кроме моей": "End all except mine", "Бан": "Ban", "БАН": "BAN", "Разбанить": "Unban", "Причина бана: ": "Ban reason: ", " · причина: ": " · reason: ", "действует до ": "valid until ", "Сделать тестером": "Make tester", "Снять тестера": "Remove tester", "Заметка о пользователе: ": "Note about user: ", "Новый пароль для ": "New password for ", " (от 6 символов): ": " (6+ characters): ", "Регистрация открыта": "Registration open", "Технические работы (входит только владелец)": "Maintenance (owner only)", "Объявление для всех (пусто — скрыть)": "Announcement for everyone (empty — hide)", "Код приглашения (пусто — не нужен)": "Invite code (empty — not required)", "Срок сессии, дней": "Session length, days", "Макс. треков в коллекции": "Max tracks in library", "Результатов в поиске (5–50)": "Search results (5–50)", "Сделать бэкап на диск (папка backups)": "Back up to disk (backups folder)", "Бэкап сохранён": "Backup saved", "Скачать экспорт базы (без паролей)": "Download database export (no passwords)", "Кэш звука": "Audio cache", "Кэш текстов": "Lyrics cache", "Очистить кэш звука": "Clear audio cache", "Очистить кэш текстов": "Clear lyrics cache", "Кэш звука очищен": "Audio cache cleared", "Кэш текстов очищен": "Lyrics cache cleared", "Статус изменён": "Status changed", "Поиск по логину": "Search by username", "рег.: ": "reg.: ", " · вход: ": " · login: ", " · треков: ": " · tracks: ", " · трек ": " · track ", " · треков": " · tracks", " из ": " of ", "в коллекциях: ": "in libraries: ", "Введи логин и пароль.": "Enter username and password.", "Пароли не совпадают.": "Passwords don't match.", "Пароль должен быть не короче 6 символов.": "Password must be at least 6 characters.", "Логин: 3–24 символа — латиница, цифры, _ . -": "Username: 3–24 characters — Latin letters, digits, _ . -", "Логин: 3–24 символа (латиница, цифры, _ . -). Пароль: от 6 символов.": "Username: 3–24 characters (Latin letters, digits, _ . -). Password: 6+ characters.", "Нажми, чтобы скрыть": "Tap to hide", "нажми, чтобы скрыть": "tap to hide", " (нажми, чтобы скрыть)": " (tap to hide)", "Логин (латиница, цифры)": "Username (Latin letters, digits)", "Telegram-канал с адресом сервера": "Telegram channel with the server address", "@канал (необязательно)": "@channel (optional)", "@канал": "@channel", "Тут пока пусто.": "Nothing here yet.", " ч ": " h ", "Причина бана:": "Ban reason:", "Заметка о пользователе:": "Note about user:", "(от 6 символов):": "(6+ characters):", "Удалить все": "Delete all", "Хранилище недоступно": "Storage unavailable", " ГБ": " GB", " МБ": " MB", "нет связи с сервером": "no connection to the server", "Сервер не отвечает. Проверь адрес и что туннель запущен.": "Server not responding. Check the address and that the tunnel is running."},EN_KEYS=Object.keys(EN).sort(function(x,y){return y.length-x.length}),LANG=lsd('lang','ru')==='en'?'en':'ru',RU=/[А-Яа-яЁё]/,ORIG=new WeakMap(),LAST=new WeakMap();
+  var EN={"Поиск": "Search", "Коллекция": "Library", "Загрузки": "Downloads", "Друзья": "Friends", "Панель владельца": "Owner panel", "Настройки": "Settings", "Обзор": "Browse", "Найти": "Find", "Вход": "Sign in", "Войти": "Sign in", "Выйти": "Sign out", "Регистрация": "Sign up", "Создать аккаунт": "Create account", "Логин": "Username", "Пароль": "Password", "Повтори пароль": "Repeat password", "Код приглашения": "Invite code", "Назад": "Back", "Дальше": "Next", "Закрыть": "Close", "Готово": "Done", "Отменить": "Cancel", "Удалить": "Delete", "Очистить": "Clear", "Принять": "Accept", "Отклонить": "Decline", "Сохранено": "Saved", "Сервер": "Server", "Аккаунт": "Account", "Заметка": "Note", "Статус": "Status", "Цвет": "Color", "Текст": "Lyrics", "Пусто": "Empty", "Свернуть": "Collapse", "Найди любую песню": "Find any song", "Недавно играли": "Recently played", "Результаты: ": "Results: ", "Результаты": "Results", "Показано: ": "Showing: ", "Ищу…": "Searching…", "Ищу текст…": "Looking for lyrics…", "Загружаю…": "Loading…", "Секунду": "One sec", "Ничего не играет": "Nothing playing", "Выбери трек": "Pick a track", "Играть / пауза": "Play / pause", "Перемешать": "Shuffle", "Повтор": "Repeat", "Повторить": "Repeat", "Перемотка": "Seek", "Громкость": "Volume", "Громкость по умолчанию": "Default volume", "Открыть плеер": "Open player", "Текст песни": "Song lyrics", "В коллекцию": "Add to library", "Скорость и тон": "Speed and pitch", "Сбросить на 1×": "Reset to 1×", "Оригинальная скорость и тональность": "Original speed and key", "полутона": "semitones", "Скорость": "Speed", "Тон ": "Pitch ", "Играть далее": "Play next", "В очередь": "Add to queue", "Очередь пуста": "Queue is empty", "Очередь": "Queue", "Очистить очередь": "Clear queue", "Ещё": "More", "Играть": "Play", "Добавлено: играет следующим": "Added: plays next", "Добавлено в очередь": "Added to queue", "Убрать из коллекции": "Remove from library", "Скопировать ссылку": "Copy link", "Ссылка скопирована": "Link copied", "Сохранить на телефон": "Save to phone", "Готовлю файл…": "Preparing file…", "Не удалось сохранить файл: ": "Could not save the file: ", "Нет связи с сервером LINN.": "No connection to the LINN server.", "Нажми Play, чтобы начать": "Press Play to start", "Сначала запусти любой трек": "Start any track first", "Выбери трек, и здесь появится его текст.": "Pick a track and its lyrics will appear here.", "Не тот текст?": "Wrong lyrics?", "Не удалось получить текст. Проверь, что сервер LINN запущен.": "Could not get the lyrics. Make sure the LINN server is running.", "Текст этого трека не нашёлся. Попробуй найти вручную:": "Lyrics for this track were not found. Try searching manually:", "Ползунок меняет скорость и тональность вместе, как на пластинке. Настройка запоминается для этого трека.": "The slider changes speed and pitch together, like a record. The setting is remembered for this track.", "Тебе доступна скорость и тон 0.25×–3×, а также функции ниже.": "Speed and pitch 0.25×–3× and the features below are available to you.", "Таймер сна: пауза": "Sleep timer: paused", "Таймер сна: ": "Sleep timer: ", "Таймер сна": "Sleep timer", " мин": " min", "1 час": "1 hour", "1.5 часа": "1.5 hours", "Выкл": "Off", "Моя коллекция": "My library", "Пока пусто.": "Nothing here yet.", "Тут пока пусто. Нажми на сердечко на обложке, и трек появится здесь.": "Nothing here yet. Tap the heart on a cover and the track will appear here.", "Тут пока пусто. Нажми на стрелку на обложке трека, и он сохранится в приложении.": "Nothing here yet. Tap the arrow on a track cover to save it in the app.", "Скачано: ": "Downloaded: ", "Скачать в приложение": "Download to the app", "Скачано. Нажми, чтобы удалить": "Downloaded. Tap to delete", "Отменить загрузку": "Cancel download", "Удалить загрузку": "Delete download", "Удалить из загрузок: ": "Delete from downloads: ", "Удалить все скачанные треки?": "Delete all downloaded tracks?", "Удалить все загрузки": "Delete all downloads", "Скачать всю коллекцию": "Download whole library", "Добавлено в очередь: ": "Added to queue: ", "Вся коллекция уже скачана": "The whole library is already downloaded", "Не скачалось: ": "Download failed: ", "нет места в хранилище": "not enough storage", "пустой ответ сервера": "empty server response", "Нет связи с сервером LINN, скачать не получится.": "No connection to the LINN server, can't download.", "Открыть загрузки без сервера": "Open downloads without server", "Офлайн: играют только скачанные треки. Чтобы войти в аккаунт, перезапусти приложение.": "Offline: only downloaded tracks play. Restart the app to sign in.", " · всего занято ": " · total used ", "Считаю…": "Counting…", "Это устройство": "This device", "Тема": "Theme", "Язык": "Language", "Тёмная": "Dark", "AMOLED (чёрная)": "AMOLED (black)", "Светлая": "Light", "Как в системе": "System", "Живой фон в плеере": "Live background in player", "Вибрация при нажатиях": "Haptics on tap", "Голубой": "Blue", "Сиреневый": "Lilac", "Жёлтый": "Yellow", "Синхронизация сервера": "Server sync", "Адрес сервера берётся из последнего сообщения в открытом Telegram-канале": "The server address is taken from the last message in a public Telegram channel", "Проверить сейчас": "Check now", "Укажи канал Telegram": "Enter a Telegram channel", "В канале не нашёл адрес сервера": "No server address found in the channel", "Адрес сервера обновлён": "Server address updated", "Адрес уже актуальный": "Address is already up to date", "Telegram недоступен: ": "Telegram unavailable: ", "Артист или трек на Музыка": "Artist, track or Музыка link", "Артист или трек на Музыка": "Artist or track on Музыка", "Введи артиста или название. Или выбери исполнителя сверху.": "Enter an artist or title. Or pick an artist above.", "Ничего не нашлось. Попробуй другой запрос.": "Nothing found. Try another query.", "Поиск не сработал": "Search failed", "Поиск включён": "Search enabled", "Трек по ссылке": "Track from link", "Не удалось загрузить. Запусти start.bat (свой сервер) или проверь адрес сервера в настройках": "Could not load. Run start.bat (your own server) or check the server address in settings", "Нет связи с сервером LINN. Запусти start.bat или проверь адрес в настройках.": "No connection to the LINN server. Run start.bat or check the address in settings.", "Сервер LINN не смог взять звук. ": "The LINN server could not get the audio. ", "Подробности в чёрном окне сервера.": "Details are in the server's black window.", "Музыка просит подтвердить, что ты не бот.": "Музыка asks to confirm you are not a bot.", "Скорее всего, yt-dlp не хватает Deno: закрой окно сервера и запусти start.bat заново.": "Most likely yt-dlp is missing Deno: close the server window and run start.bat again.", "Открой настройки (шестерёнка вверху) и вставь адрес другого сервера LINN или ключ Музыка Data API. Ссылку на трек с Музыка можно вставить в строку поиска.": "Open settings (gear at the top) and paste another LINN server address or a Музыка Data API key. You can paste a Музыка track link into the search bar.", "Запущена СТАРАЯ версия linn_server.py. Закрой окно сервера, замени файл на новый и запусти start.bat заново.": "An OLD version of linn_server.py is running. Close the server window, replace the file with the new one and run start.bat again.", "нет ответа от серверов": "no response from servers", "поисковые сервера не отвечают": "search servers are not responding", "сессия истекла": "session expired", "Сессия истекла. Войди снова.": "Session expired. Sign in again.", "Ошибка сервера (": "Server error (", "Сервер временно недоступен": "Server temporarily unavailable", "Эта платформа работает только через сервер LINN": "This platform only works through the LINN server", "Поиск музыки работает только через сервер LINN": "Музыка only works through the LINN server", "Воспроизведение": "Playback", "Автопереход к следующему треку": "Auto-play next track", "Помнить последний трек и громкость": "Remember last track and volume", "Горячие клавиши (←/→, N, P, M, L)": "Hotkeys (←/→, N, P, M, L)", "Бейдж скорости на обложках": "Speed badge on covers", "Внешний вид": "Appearance", "Цвет акцента": "Accent color", "Размер карточек": "Card size", "Размер текста": "Text size", "Анимации": "Animations", "Мелкие": "Small", "Обычные": "Normal", "Крупные": "Large", "Мелкий": "Small", "Обычный": "Normal", "Крупный": "Large", "Фиолетовый": "Purple", "Розовый": "Pink", "Бирюзовый": "Teal", "Персиковый": "Peach", "Зелёный": "Green", "Красный": "Red", "Открывать текст вместе с плеером": "Open lyrics with the player", "Поиск и коллекция": "Search and library", "Быстрые исполнители и история": "Quick artists and history", "Запоминать историю поиска": "Remember search history", "Сортировка коллекции": "Library sorting", "Сначала новые": "Newest first", "Сначала старые": "Oldest first", "По названию": "By title", "По исполнителю": "By artist", "Данные и аккаунт": "Data and account", "Сменить пароль": "Change password", "Текущий пароль:": "Current password:", "Новый пароль (от 6 символов):": "New password (6+ characters):", "Пароль изменён": "Password changed", "Экспорт коллекции (JSON)": "Export library (JSON)", "Очистить коллекцию ": "Clear library ", " вместе с коллекцией?": " along with the library?", "Очистить историю поиска": "Clear search history", "Сбросить настройки": "Reset settings", "Отправить баг-репорт или идею": "Send a bug report or idea", "Опиши проблему или идею:": "Describe the problem or idea:", "Отправлено владельцу, спасибо!": "Sent to the owner, thank you!", "ОШИБКА СЕРВЕРА, при ее возникновении обратитесь к администратору проекта": "SERVER ERROR. If this happens, contact the project administrator.", "Поддержка": "Support", "Написать в Telegram": "Write on Telegram", "Показывать ID трека": "Show track ID", "Тексты песен включены": "Lyrics enabled", "Лаборатория ТЕСТЕРОВЩИКА": "TESTER lab", "ТЕСТЕРОВЩИК": "TESTER", "Не удалось сохранить коллекцию: ": "Could not save the library: ", "Не удалось загрузить коллекцию: ": "Could not load the library: ", "Имя и статус": "Name and status", "Имя в профиле (необязательно)": "Profile name (optional)", "Статус / о себе": "Status / about me", "Аватар": "Avatar", "Сохранить профиль": "Save profile", "Профиль сохранён": "Profile saved", "Фото профиля": "Profile photo", "Загрузить фото": "Upload photo", "Убрать фото": "Remove photo", "Загрузить баннер": "Upload banner", "Убрать баннер": "Remove banner", "Баннер": "Banner", "Цвет ника": "Name color", "Эффект ника": "Name effect", "Без эффекта": "No effect", "Свечение": "Glow", "Радуга": "Rainbow", "Градиент": "Gradient", "Не удалось открыть картинку": "Could not open the image", "Добавить в друзья": "Add friend", "Удалить из друзей": "Remove friend", "Поиск по логину…": "Search by username…", "Найти человека по нику или логину…": "Find a person by nickname or username…", "Найди друзей по нику.": "Find friends by nickname.", "Никого не нашлось.": "Nobody found.", "Пока никого": "Nobody yet", "Входящие заявки": "Incoming requests", "Исходящие заявки": "Outgoing requests", "Заявка отправлена — отменить": "Request sent — cancel", "Уведомления": "Notifications", "Уведомлений нет.": "No notifications.", "Отметить всё прочитанным": "Mark all as read", "Не беспокоить": "Do not disturb", "Невидимка": "Invisible", "В сети": "Online", "Отошёл": "Away", "не в сети": "offline", "Блок": "Block", "Заблокировать": "Block", "Разблокировать": "Unblock", "Заблокировано": "Blocked", "Заблокированные": "Blocked users", "Владелец": "Owner", " (владелец)": " (owner)", "Владелец проекта LINNmusic": "LINNmusic project owner", "Пользователи": "Users", "Пользователь": "User", "Пользователей": "Users", "Тестеров": "Testers", "Репорты": "Reports", "Репортов": "Reports", "Репортов от тестеров пока нет.": "No reports from testers yet.", "Стримов": "Streams", "Поисков": "Searches", "Текстов": "Lyrics", "Входов": "Logins", "Неудачных входов": "Failed logins", "Активных сессий": "Active sessions", "Аптайм": "Uptime", "Новых за 24 ч": "New in 24h", "Треков в коллекциях": "Tracks in libraries", "Самые частые треки в коллекциях": "Most common tracks in libraries", "Обслуживание": "Maintenance", "Сессии": "Sessions", "Журнал": "Log", "Журнал пуст.": "Log is empty.", "Журнал очищен": "Log cleared", "Очистить журнал": "Clear log", "Фильтр: login, admin, reg…": "Filter: login, admin, reg…", "Выкинуть": "Kick out", "Завершить": "End", "Завершить все, кроме моей": "End all except mine", "Бан": "Ban", "БАН": "BAN", "Разбанить": "Unban", "Причина бана: ": "Ban reason: ", " · причина: ": " · reason: ", "действует до ": "valid until ", "Сделать тестером": "Make tester", "Снять тестера": "Remove tester", "Заметка о пользователе: ": "Note about user: ", "Новый пароль для ": "New password for ", " (от 6 символов): ": " (6+ characters): ", "Регистрация открыта": "Registration open", "Технические работы (входит только владелец)": "Maintenance (owner only)", "Объявление для всех (пусто — скрыть)": "Announcement for everyone (empty — hide)", "Код приглашения (пусто — не нужен)": "Invite code (empty — not required)", "Срок сессии, дней": "Session length, days", "Макс. треков в коллекции": "Max tracks in library", "Результатов в поиске (5–50)": "Search results (5–50)", "Сделать бэкап на диск (папка backups)": "Back up to disk (backups folder)", "Бэкап сохранён": "Backup saved", "Скачать экспорт базы (без паролей)": "Download database export (no passwords)", "Кэш звука": "Audio cache", "Кэш текстов": "Lyrics cache", "Очистить кэш звука": "Clear audio cache", "Очистить кэш текстов": "Clear lyrics cache", "Кэш звука очищен": "Audio cache cleared", "Кэш текстов очищен": "Lyrics cache cleared", "Статус изменён": "Status changed", "Поиск по логину": "Search by username", "рег.: ": "reg.: ", " · вход: ": " · login: ", " · треков: ": " · tracks: ", " · трек ": " · track ", " · треков": " · tracks", " из ": " of ", "в коллекциях: ": "in libraries: ", "Введи логин и пароль.": "Enter username and password.", "Пароли не совпадают.": "Passwords don't match.", "Пароль должен быть не короче 6 символов.": "Password must be at least 6 characters.", "Логин: 3–24 символа — латиница, цифры, _ . -": "Username: 3–24 characters — Latin letters, digits, _ . -", "Логин: 3–24 символа (латиница, цифры, _ . -). Пароль: от 6 символов.": "Username: 3–24 characters (Latin letters, digits, _ . -). Password: 6+ characters.", "Нажми, чтобы скрыть": "Tap to hide", "нажми, чтобы скрыть": "tap to hide", " (нажми, чтобы скрыть)": " (tap to hide)", "Логин (латиница, цифры)": "Username (Latin letters, digits)", "Telegram-канал с адресом сервера": "Telegram channel with the server address", "@канал (необязательно)": "@channel (optional)", "@канал": "@channel", "Тут пока пусто.": "Nothing here yet.", " ч ": " h ", "Причина бана:": "Ban reason:", "Заметка о пользователе:": "Note about user:", "(от 6 символов):": "(6+ characters):", "Удалить все": "Delete all", "Хранилище недоступно": "Storage unavailable", " ГБ": " GB", " МБ": " MB", "нет связи с сервером": "no connection to the server", "Сервер не отвечает. Проверь адрес и что туннель запущен.": "Server not responding. Check the address and that the tunnel is running."},EN_KEYS=Object.keys(EN).sort(function(x,y){return y.length-x.length}),LANG=lsd('lang','ru')==='en'?'en':'ru',RU=/[А-Яа-яЁё]/,ORIG=new WeakMap(),LAST=new WeakMap();
   function tr(s){
     if(LANG==='ru'||!s||!RU.test(s))return s;
     var m=EN[s];if(m!=null)return m;var t=s;
@@ -1791,7 +1838,7 @@ async function pTools(b){
       try{
         var blob,lu=DL[t.id]?await dlUrl(t.id):null;
         if(lu){blob=await (await fetch(lu)).blob()}
-        else{if(!linnOk)throw new Error('нет связи с сервером');var r=await fetch(LINN+'/stream/'+t.id+'?'+tq());if(!r.ok)throw new Error('HTTP '+r.status);blob=await r.blob()}
+        else{if(!linnOk)throw new Error('нет связи с сервером');var r=await fetch(LINN+'/dl/'+t.id+'?n='+encodeURIComponent(name)+'&'+tq());if(!r.ok)throw new Error('HTTP '+r.status);blob=await r.blob()}
         var ext=/webm/.test(blob.type)?'webm':/mpeg/.test(blob.type)?'mp3':/ogg/.test(blob.type)?'ogg':'m4a';
         var w=await Fs.writeFile({path:'LINN/'+name+'.'+ext,data:await blobB64(blob),directory:'CACHE',recursive:true});
         await Sh.share({title:name,url:w.uri,dialogTitle:name});
@@ -1806,7 +1853,7 @@ async function pTools(b){
   }
 
   /* ---- «играть» и «перемешать», недавние ---- */
-  var REC=ls.get('recent',[]).filter(isSoundCloud),REC_SHOWN=false,lastRec='';
+  var REC=ls.get('recent',[]).filter(isPlayableTrack),REC_SHOWN=false,lastRec='';
   a.addEventListener('playing',function(){
     var c=cur();if(!c||c.id===lastRec)return;lastRec=c.id;
     REC=REC.filter(function(x){return x.id!==c.id});REC.unshift({id:c.id,title:c.title,user:c.user,thumb:c.thumb,duration:c.duration});REC=REC.slice(0,40);ls.set('recent',REC);
@@ -2033,17 +2080,80 @@ async function pTools(b){
 })();
 </script>
 <script>
-/* My Wave: SoundCloud only; no changes to the account data schema. */
+/* My Wave: Музыка only; no changes to the account data schema. */
 const WAVE={active:false,epoch:0,page:0,seen:new Set(),pending:null,seed:'',mood:'mix',advance:false};
+const dailyCard=document.createElement('section');
+dailyCard.id='dailyMix';dailyCard.setAttribute('aria-live','polite');
+dailyCard.innerHTML='<div class="daily-head"><div><small>ПОДБОРКА НА СЕГОДНЯ</small><h2>Что сегодня слушаем, бро?</h2><p>Трек дня и свежие находки из LINNmusic</p></div><button type="button" id="dailyPlay" disabled>▶ Играть подборку</button></div><div class="daily-content" id="dailyContent"><span class="daily-wait">Подбираю музыку на сегодня…</span></div>';
+const dailyStyle=document.createElement('style');
+dailyStyle.textContent='#dailyMix{margin:0 0 24px;padding:22px;border:1px solid #8c72e866;border-radius:24px;background:radial-gradient(ellipse at 85% 0%,#9d79ff55,transparent 55%),linear-gradient(120deg,#241b3e,#151022);overflow:hidden}#dailyMix[hidden]{display:none}.daily-head{display:flex;gap:18px;align-items:center;justify-content:space-between}.daily-head small{letter-spacing:.16em;color:#c6b2ff;font-size:.66rem}.daily-head h2{font-size:1.55rem;margin:6px 0}.daily-head p{color:#d2c9e4;margin:0;font-size:.88rem}#dailyPlay{border:1px solid #ffffff28;border-radius:14px;padding:12px 16px;background:#ad91ff;color:#170f2b;font:inherit;font-weight:700;white-space:nowrap}#dailyPlay:disabled{opacity:.55}.daily-content{display:flex;gap:12px;overflow:auto;padding:18px 2px 3px;scrollbar-width:thin}.daily-tile{flex:0 0 156px;min-width:0;text-align:left;border:1px solid #ffffff20;border-radius:17px;padding:9px;background:#ffffff0b;color:#f5f1ff;cursor:pointer;transition:transform .2s,border-color .2s}.daily-tile:hover{transform:translateY(-3px);border-color:#b89cff}.daily-tile img,.daily-cover{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:linear-gradient(135deg,#7652bc,#20143d)}.daily-tile strong,.daily-tile span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.daily-tile strong{margin-top:9px;font-size:.88rem}.daily-tile span{margin-top:3px;color:#b8add0;font-size:.78rem}.daily-tag{display:inline-block!important;margin-top:8px!important;color:#d0bbff!important;font-size:.66rem!important;letter-spacing:.08em}.daily-wait{color:#c9bfdc;padding:12px 2px}@media(max-width:600px){#dailyMix{padding:18px}.daily-head{align-items:flex-start;flex-direction:column}.daily-head h2{font-size:1.35rem}.daily-tile{flex-basis:138px}#dailyPlay{width:100%}}@media(prefers-reduced-motion:reduce){.daily-tile{transition:none}.daily-tile:hover{transform:none}}';
+document.head.appendChild(dailyStyle);
+let dailyTracks=[];
+function dailyRender(rows){
+  dailyTracks=(rows||[]).filter(isPlayableTrack).filter((t,i,a)=>a.findIndex(x=>x.id===t.id)===i).slice(0,12);
+  const content=$('dailyContent');content.replaceChildren();
+  if(!dailyTracks.length){content.textContent='Пока не удалось подобрать треки. Попробуй поиск или загляни позже.';$('dailyPlay').disabled=true;return}
+  dailyTracks.slice(0,8).forEach((t,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='daily-tile';b.title='Включить: '+t.title;
+    if(t.thumb){const img=document.createElement('img');img.loading='lazy';img.alt='';img.src=t.thumb;b.appendChild(img)}else{const cover=document.createElement('span');cover.className='daily-cover';cover.textContent='♫';b.appendChild(cover)}
+    const title=document.createElement('strong');title.textContent=t.title||'Без названия';const artist=document.createElement('span');artist.textContent=t.user||'LINNmusic';b.append(title,artist);
+    if(i===0){const tag=document.createElement('span');tag.className='daily-tag';tag.textContent='✦ ТРЕК ДНЯ';b.appendChild(tag)}
+    b.onclick=()=>play(dailyTracks,i);content.appendChild(b);
+  });
+  $('dailyPlay').disabled=false;$('dailyPlay').onclick=()=>play(dailyTracks,0);
+}
+async function loadDaily(){
+  const today=new Date().toISOString().slice(0,10),key='dailyMix:'+today,cached=ls.get(key,[]);
+  if(Array.isArray(cached)&&cached.length)dailyRender(cached);
+  if(!TOKEN){if(!dailyTracks.length)$('dailyContent').textContent='Войди в аккаунт, чтобы загрузить треки дня.';return}
+  try{await linnReady;if(!linnOk)await pingLinn();if(!linnOk){if(!dailyTracks.length)$('dailyContent').textContent='Подборка появится, когда сервер будет доступен.';return}
+    const rows=await searchTracks('new music','lin');if(rows.length){
+      const day=Math.floor(Date.now()/86400000),offset=day%rows.length;
+      const rotated=rows.slice(offset).concat(rows.slice(0,offset));
+      ls.set(key,rotated);dailyRender(rotated);
+    }else if(!dailyTracks.length){$('dailyContent').textContent='Сегодня новых треков пока нет. Загляни позже.'}
+  }catch(e){if(!dailyTracks.length)$('dailyContent').textContent='Подборка появится, когда каталог снова будет доступен.'}
+}
+loadDaily();
 const waveCard=document.createElement('section');
 waveCard.id='myWave';
-waveCard.innerHTML='<div><small>SOUNDCLOUD · ДЛЯ ТЕБЯ</small><h2>Моя волна</h2><p id="waveStatus" aria-live="polite">Любимые исполнители и новые находки</p></div><div class="waveControls"><select id="waveMood" aria-label="Настроение волны"><option value="mix">Для меня</option><option value="calm">Спокойствие</option><option value="energy">Энергия</option><option value="focus">Фокус</option><option value="night">Ночь</option></select><button type="button" id="waveStart">▶ Включить волну</button><button type="button" id="waveStop" hidden>Остановить волну</button></div>';
+waveCard.innerHTML='<div><small>МУЗЫКА · ДЛЯ ТЕБЯ</small><h2>Волна</h2><p id="waveStatus" aria-live="polite">Музыка, подобранная под твой вкус</p></div><div class="waveControls"><select id="waveMood" aria-label="Настроение волны"><option value="mix">Для меня</option><option value="calm">Спокойствие</option><option value="energy">Энергия</option><option value="focus">Фокус</option><option value="night">Ночь</option></select><button type="button" id="waveStart">▶ Включить волну</button><button type="button" id="waveStop" hidden>Остановить волну</button></div>';
 $('h').parentNode.insertBefore(waveCard,$('h'));
+waveCard.insertAdjacentElement('afterend',dailyCard);
 const waveStyle=document.createElement('style');
 waveStyle.textContent='#myWave{margin:12px 0 24px;padding:24px;border:1px solid #7860cc66;border-radius:24px;background:radial-gradient(ellipse at top right,#7652bc88,transparent 65%),linear-gradient(120deg,#292047,#151022);display:flex;gap:20px;align-items:center;justify-content:space-between}#myWave h2{font-size:2rem;margin:6px 0}#myWave small{letter-spacing:.15em;color:#c6b2ff;font-size:.65rem}#myWave p{color:#d2c9e4;margin:6px 0;font-size:.85rem}.waveControls{display:flex;flex-wrap:wrap;gap:8px;max-width:320px}.waveControls button,.waveControls select{border:1px solid #ffffff26;border-radius:14px;padding:12px;background:#241b3e;color:#fff;font:inherit}#waveStart{background:#ab91ff;color:#140c29;font-weight:700}.waveControls button:disabled{opacity:.6}@media(max-width:600px){#myWave{align-items:stretch;flex-direction:column;padding:20px}.waveControls{max-width:none}#myWave h2{font-size:1.7rem}}';
 document.head.appendChild(waveStyle);
+const referenceSkin=document.createElement('style');
+referenceSkin.textContent=`
+#dailyMix,#myWave{background:radial-gradient(ellipse at 88% 0%,rgba(var(--accrgb),.18),transparent 58%),var(--panel)!important;border:1px solid rgba(var(--accrgb),.3)!important;color:var(--text)}
+#dailyMix h2,#myWave h2{color:var(--text)}#dailyMix p,#myWave p{color:var(--mute)}#dailyMix small,#myWave small{color:var(--acc)}
+#dailyPlay{background:var(--acc)!important;color:var(--bg)!important;border-color:rgba(var(--accrgb),.4)!important}
+.daily-tile{background:var(--panel2)!important;border-color:var(--line)!important;color:var(--text)!important}.daily-tile span{color:var(--mute)!important}.daily-tag{color:var(--acc)!important}
+.waveControls button,.waveControls select{background:var(--panel2);color:var(--text);border-color:var(--line)}#waveStart{background:var(--acc)!important;color:var(--bg)!important}
+#view.library-view .grid{grid-template-columns:1fr;gap:8px}#view.library-view .card{display:grid;grid-template-columns:60px minmax(0,1fr);grid-template-rows:1fr 1fr;align-items:center;gap:0 12px;min-height:78px;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:18px}
+#view.library-view .art{grid-row:1/3;width:60px;height:60px;aspect-ratio:auto;margin:0;border-radius:14px}#view.library-view .card .n{align-self:end}#view.library-view .card .u{align-self:start}#view.library-view .art .ed{display:none}#view.library-view .art .lk{width:30px;height:30px;top:4px;right:4px}
+#dlg #setBody>h4{margin:20px 0 9px;padding:0 3px;color:var(--mute);font-size:.82rem;text-transform:uppercase;letter-spacing:.08em}#dlg #setBody>.row{padding:14px 15px;margin:0 0 7px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
+.trend-label{max-width:1100px;width:100%;margin:4px auto 0;padding:6px 20px 0;color:var(--mute);font-weight:700;font-size:.9rem}
+.more-actions{display:grid;gap:8px}.more-actions button{padding:14px 16px;border-radius:14px;background:var(--panel2);border:1px solid var(--line);text-align:left}.more-actions button:last-child{text-align:center;color:var(--mute)}
+@media(min-width:761px){.nav-mobile{display:none!important}}
+@media(max-width:760px){
+ .trend-label{padding:8px 14px 0;font-size:.84rem}
+ nav{display:flex;justify-content:space-around;gap:0;padding:5px 4px calc(5px + env(safe-area-inset-bottom));background:rgba(13,11,26,.92);border-top:1px solid var(--line)}
+ nav button{min-width:0;flex:1;gap:3px;padding:6px 1px 5px;font-size:.62rem;letter-spacing:-.02em;border-radius:13px}
+ nav button .i{width:21px;height:21px}nav button.on{background:rgba(var(--accrgb),.16);color:var(--acc)}
+ nav .nav-utility{display:none!important}#gear{display:none}
+ #view.library-view .grid{grid-template-columns:1fr}
+ #dailyMix,#myWave{border-radius:22px!important;padding:18px!important;margin-bottom:18px!important}
+ #dailyMix .daily-head{align-items:flex-start;flex-direction:column}#dailyPlay{width:100%}
+ .wrap{padding-left:14px;padding-right:14px}
+ #navMore{width:100%;max-width:none;margin:auto 0 0;border-radius:24px 24px 0 0}
+}
+@media(max-width:380px){nav button{font-size:.57rem}nav button .i{width:19px;height:19px}}
+`;
+document.head.appendChild(referenceSkin);
+function waveArtistSeed(t){if(!t)return '';const title=String(t.title||'').trim(),m=title.match(/^(.{2,64}?)\s+[\-–—:]\s+\S/);return m?m[1].trim():String(t.user||'').trim()}
 function waveStatus(text){$('waveStatus').textContent=text}
-function waveStop(pause=false){WAVE.active=false;WAVE.epoch++;WAVE.pending=null;WAVE.advance=false;$('waveStart').disabled=false;$('waveStop').hidden=true;if(pause)a.pause();waveStatus('Любимые исполнители и новые находки')}
+function waveStop(pause=false){WAVE.active=false;WAVE.epoch++;WAVE.pending=null;WAVE.advance=false;$('waveStart').disabled=false;$('waveStop').hidden=true;if(pause)a.pause();waveStatus('Музыка, подобранная под твой вкус')}
 async function waveFill(){
   if(!WAVE.active)return [];
   if(WAVE.pending)return WAVE.pending;
@@ -2054,7 +2164,7 @@ async function waveFill(){
       const d=await tfetch(LINN+'/wave?'+tq()+'&page='+WAVE.page+'&mood='+enc(WAVE.mood)+'&seed='+enc(WAVE.seed)+'&exclude='+enc(exclude),45000);
       if(!WAVE.active||epoch!==WAVE.epoch)return [];
       WAVE.page=d.page;
-      const tracks=(d.tracks||[]).filter(t=>isSoundCloud(t)&&!WAVE.seen.has(t.id)&&!queue.some(q=>q.id===t.id));
+      const tracks=(d.tracks||[]).filter(t=>isPlayableTrack(t)&&!WAVE.seen.has(t.id)&&!queue.some(q=>q.id===t.id));
       const unique=tracks.filter((t,i)=>tracks.findIndex(x=>x.id===t.id)===i);
       if(unique.length){unique.forEach(t=>WAVE.seen.add(t.id));waveStatus(d.personalized?'По твоим исполнителям · '+d.basis:'Новые находки · '+$('waveMood').selectedOptions[0].textContent);return unique}
     }
@@ -2068,24 +2178,24 @@ async function waveStart(){
   if(!ME||!TOKEN){toast('Войди в аккаунт, чтобы включить волну');return}
   const starting=WAVE.epoch;$('waveStart').disabled=true;$('waveStop').hidden=false;
   await pingLinn();if(starting!==WAVE.epoch)return;if(!linnOk){waveStop();toast('Для волны нужно подключение к серверу');return}
-  WAVE.active=true;WAVE.epoch++;WAVE.page=0;WAVE.seen=new Set();WAVE.seed=isSoundCloud(cur())?(cur().user||''):'';WAVE.mood=$('waveMood').value;
+  WAVE.active=true;WAVE.epoch++;WAVE.page=0;WAVE.seen=new Set();WAVE.seed=isPlayableTrack(cur())?waveArtistSeed(cur()):'';WAVE.mood=$('waveMood').value;
   const epoch=WAVE.epoch;
   $('waveStart').disabled=true;$('waveStop').hidden=false;waveStatus('Собираю твою волну…');
   try{
     const tracks=await waveFill();if(epoch!==WAVE.epoch)return;
-    if(!tracks.length)throw new Error('Нет новых треков — выбери другое настроение');
+    if(!tracks.length)throw new Error('По любимым артистам пока не нашлись новые треки. Попробуй ещё раз чуть позже.');
     mode='home';setNav();home={q:'Моя волна',list:tracks};list=tracks;$('h').textContent='Моя волна';draw();
     await play(tracks,0,true);
-  }catch(e){if(epoch!==WAVE.epoch)return;waveStop();waveStatus('Не удалось собрать волну. '+e.message)}
+  }catch(e){if(epoch!==WAVE.epoch)return;waveStop();waveStatus(e.message&&e.message.includes('HTTP')?'Каталог временно не ответил. Попробуй запустить волну ещё раз.':'Не удалось собрать волну. '+e.message)}
   finally{if(epoch===WAVE.epoch)$('waveStart').disabled=false}
 }
 $('waveStart').onclick=waveStart;$('waveStop').onclick=()=>waveStop(true);
 $('waveMood').onchange=()=>{if(WAVE.active)waveStart()};
 const waveBasePlay=play;
 play=async function(tracks,index,keepWave=false){
-  if(!isSoundCloud(tracks[index])){toast('Этот трек недоступен в SoundCloud-версии');return}
+  if(!isPlayableTrack(tracks[index])){toast('Этот трек недоступен в Музыка-версии');return}
   if(!keepWave&&tracks!==queue)waveStop();
-  const chosen=tracks[index],filtered=tracks.filter(isSoundCloud);
+  const chosen=tracks[index],filtered=tracks.filter(isPlayableTrack);
   return waveBasePlay(filtered,filtered.indexOf(chosen));
 };
 const waveBaseStep=step;
@@ -2101,7 +2211,7 @@ step=async function(direction){
   finally{if(epoch===WAVE.epoch)WAVE.advance=false}
 };
 const waveBaseSignOut=signOut;signOut=function(){waveStop();searchToken++;return waveBaseSignOut.apply(this,arguments)};
-const waveBaseNav=setNav;setNav=function(){waveBaseNav.apply(this,arguments);waveCard.hidden=mode!=='home'};
+const waveBaseNav=setNav;setNav=function(){waveBaseNav.apply(this,arguments);const discovery=mode==='home'&&!home.q&&navFocus!=='search';waveCard.hidden=!discovery;dailyCard.hidden=!discovery};
 setNav();
 
 </script>
@@ -2138,8 +2248,8 @@ play=function(tracks,index,keepWave=false){
   const track=t=>({id:t.id,title:String(t.title||''),user:String(t.user||''),thumb:String(t.thumb||''),duration:t.duration});
   let loading=false,recordedToken=-1,lastSave=0;
   function saveQueue(){
-    if(loading||!ME||!isSoundCloud(cur()))return;
-    const tracks=queue.filter(isSoundCloud).slice(0,500).map(track);
+    if(loading||!ME||!isPlayableTrack(cur()))return;
+    const tracks=queue.filter(isPlayableTrack).slice(0,500).map(track);
     const index=tracks.findIndex(t=>t.id===cur().id);
     if(index<0)return;
     write('queue',{tracks,index,position:Math.max(0,Number(a.currentTime)||0),saved:Date.now()});
@@ -2151,7 +2261,7 @@ play=function(tracks,index,keepWave=false){
   };
   a.addEventListener('playing',()=>{
     loading=false;
-    if(ME&&isSoundCloud(cur())&&recordedToken!==tok){
+    if(ME&&isPlayableTrack(cur())&&recordedToken!==tok){
       recordedToken=tok;
       const rows=read('history',[]);
       write('history',[{...track(cur()),playedAt:Date.now()},...(Array.isArray(rows)?rows:[])].slice(0,300));
@@ -2164,7 +2274,7 @@ play=function(tracks,index,keepWave=false){
   const oldSignOut=signOut;signOut=function(){saveQueue();if($('listenHistory').open)$('listenHistory').close();$('historyRows').replaceChildren();recordedToken=-1;return oldSignOut.apply(this,arguments)};
   async function resumeQueue(){
     const saved=read('queue',null);
-    if(!saved||!Array.isArray(saved.tracks)||!isSoundCloud(saved.tracks[saved.index]))return toast('Сохранённой очереди пока нет');
+    if(!saved||!Array.isArray(saved.tracks)||!isPlayableTrack(saved.tracks[saved.index]))return toast('Сохранённой очереди пока нет');
     const selected=saved.tracks[saved.index];const position=Number(saved.position)||0;
     const account=key('queue');
     let expected;
@@ -2180,7 +2290,7 @@ play=function(tracks,index,keepWave=false){
   function showHistory(){
     const rows=read('history',[]),box=$('historyRows');box.replaceChildren();
     if(!Array.isArray(rows)||!rows.length)box.textContent='История пока пуста. Включи любой трек.';
-    else rows.filter(isSoundCloud).forEach(t=>{
+    else rows.filter(isPlayableTrack).forEach(t=>{
       const b=el('button','abtn');b.type='button';b.style.cssText='display:block;width:100%;text-align:left;margin:8px 0';
       b.textContent=t.title+' · '+t.user+' — '+new Date(t.playedAt).toLocaleString('ru-RU');
       b.onclick=()=>{dialog.close();play([t],0)};box.appendChild(b);
@@ -2194,8 +2304,8 @@ play=function(tracks,index,keepWave=false){
   button('↻ Продолжить очередь',resumeQueue);
   button('История',showHistory);
   button('🎲 Что послушать?',()=>{
-    const choices=liked.filter(isSoundCloud).filter(t=>t.id!==cur()?.id);
-    if(!choices.length){toast('Добавь ещё треки SoundCloud в коллекцию');return}
+    const choices=liked.filter(isPlayableTrack).filter(t=>t.id!==cur()?.id);
+    if(!choices.length){toast('Добавь ещё треки Музыка в коллекцию');return}
     play([choices[Math.floor(Math.random()*choices.length)]],0);
   });
   waveCard.insertAdjacentElement('afterend',actions);
@@ -2204,5 +2314,156 @@ play=function(tracks,index,keepWave=false){
 })();
 
 </script>
+<script>/* Liquid Glass controls and friend profiles */
+(function(){
+ const style=document.createElement('style');style.textContent=`
+ body.liquid button{background:linear-gradient(135deg,rgba(255,255,255,var(--glass-a)),rgba(160,140,255,.07));backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border-color:transparent;box-shadow:0 4px 18px #0002;transition:transform .22s,box-shadow .22s,background .22s}
+ body.liquid button:active{transform:scale(.96)}body.liquid button:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+ body.glowtext h2{background:linear-gradient(100deg,var(--text),var(--acc),var(--text));background-size:200% auto;background-clip:text;-webkit-background-clip:text;color:transparent;animation:linnShine 7s ease-in-out infinite}
+ @keyframes linnShine{50%{background-position:100% center}}
+ .friend-card{border:1px solid var(--line);border-radius:20px;padding:16px;margin:10px 0;background:var(--panel);flex-wrap:wrap;gap:10px}.friend-card .ui{min-width:150px}.friend-avatar{width:58px;height:58px;object-fit:cover;border-radius:18px}.friend-song{display:block;color:var(--acc);margin-top:8px}
+ @media(prefers-reduced-motion:reduce){body.glowtext h2{animation:none}body.liquid button{transition:none}}
+ body.noanim.glowtext h2{animation:none}body.noanim.liquid button{transition:none}`;document.head.appendChild(style);
+ function paint(){document.body.classList.toggle('liquid',ls.get('glass',true));document.body.classList.toggle('glowtext',ls.get('glowtext',false));document.documentElement.style.setProperty('--glass-a',String(Math.max(.04,Math.min(.4,Number(ls.get('glassOpacity',.14))))));document.documentElement.style.setProperty('--glass-blur',Math.max(0,Math.min(24,Number(ls.get('glassBlur',12))))+'px')}
+ const oldSettings=buildSettings;buildSettings=function(){oldSettings.apply(this,arguments);const b=$('setBody');b.appendChild(el('h4','','Стекло и анимации'));
+ for(const [k,label,def] of [['glass','Стеклянные кнопки',true],['glowtext','Перелив заголовков',false],['shareListening','Показывать друзьям, что я слушаю',false]])b.appendChild(mkRow(label,mkSw(ls.get(k,def),v=>{ls.set(k,v);paint();beat()})));
+ for(const [k,label,values,def] of [['glassOpacity','Прозрачность стекла',[[.08,'Высокая'],[.14,'Средняя'],[.28,'Низкая']],.14],['glassBlur','Размытие',[[0,'Без размытия'],[8,'Мягкое'],[18,'Сильное']],12]])b.appendChild(mkRow(label,mkSel(values,ls.get(k,def),v=>{ls.set(k,+v);paint()})));
+ };paint();
+ const oldApi=api;api=function(path,body){if(path==='/api/presence'&&body)body={...body,share_listening:!!ls.get('shareListening',false),listening:!a.paused&&isPlayableTrack(cur())?cur():null};return oldApi(path,body)};
+ a.addEventListener('playing',()=>beat());a.addEventListener('pause',()=>beat());
+ const oldRow=fRow;fRow=function(u,acts,extra){const row=oldRow(u,acts,extra);row.classList.add('friend-card');
+ if(u.av&&u.slug){const img=document.createElement('img');img.className='friend-avatar';img.alt='';img.src=LINN+'/pf/'+encodeURIComponent(u.slug)+'/avatar?v='+encodeURIComponent(u.av);row.prepend(img)}
+ const info=row.querySelector('.ui');if(u.bio)info.appendChild(el('span','',u.bio));
+ if(isPlayableTrack(u.listening)){const song=el('button','friend-song','♫ '+u.listening.title+' · '+u.listening.user);song.type='button';song.onclick=()=>play([u.listening],0);info.appendChild(song)}
+ const profile=el('button','mini','Профиль');profile.type='button';profile.onclick=()=>{const d=document.createElement('dialog');d.style.cssText='background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:24px;padding:24px;max-width:90vw';d.append(el('h2','',u.nick||u.login),el('p','','@'+u.login),el('p','',u.bio||'Пока без описания'),el('p','',u.online?'В сети':'Не в сети'));const close=el('button','','Закрыть');close.onclick=()=>d.close();d.appendChild(close);d.addEventListener('close',()=>d.remove());document.body.appendChild(d);d.showModal()};row.appendChild(profile);return row;
+ };
+})();
+
+</script>
+<script>
+(function(){
+ const sw=document.getElementById('srcsw');if(!sw)return;
+ SRC='lin';ls.set('src','lin');sw.dataset.on='lin';
+ const button=sw.querySelector('[data-src="lin"]');
+ if(button){button.classList.add('on');button.setAttribute('aria-pressed','true')}
+})();
+</script>
+
+<script>
+/* Reference-inspired mobile screens; all colors stay bound to the active LINN theme. */
+(function(){
+  const mobileTitle=$('mobileTitle');
+  const libToolbar=document.createElement('section');
+  libToolbar.id='libToolbar';libToolbar.hidden=true;
+  libToolbar.innerHTML='<div class="lib-title-row"><div><small>ВАША МУЗЫКА</small><h2>Медиатека</h2></div><button type="button" id="libCreate" aria-label="Создать плейлист">＋</button></div><div class="lib-tabs" role="tablist" aria-label="Раздел медиатеки"></div><div class="lib-controls"><span id="libCaption">Ваша коллекция</span><div><button type="button" id="libSort" aria-label="Сортировка">↕ Сортировка</button><button type="button" id="libLayout" aria-label="Вид списка">▤</button></div></div>';
+  const wrap=document.querySelector('.wrap');wrap.insertBefore(libToolbar,$('h'));
+  const stationSection=document.createElement('section');stationSection.id='stations';stationSection.hidden=true;
+  stationSection.innerHTML='<div class="section-title"><div><h2>Ваши станции</h2><p>Вокруг любимой музыки</p></div><button type="button" id="stationRefresh" aria-label="Обновить станции">↻</button></div><div class="station-grid" id="stationGrid"></div>';
+  dailyCard.insertAdjacentElement('afterend',stationSection);
+  const quickActions=document.querySelector('.wrap > .waveControls');if(quickActions)stationSection.insertAdjacentElement('afterend',quickActions);
+  const polish=document.createElement('style');
+  polish.textContent=`
+#mobileTitle{display:none}.lib-title-row,.lib-controls,.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.lib-title-row small{font-size:.67rem;letter-spacing:.16em;color:var(--acc);font-weight:700}.lib-title-row h2{font-size:1.75rem;margin:5px 0 14px}.lib-title-row>button{width:48px;height:48px;border-radius:17px;background:var(--panel2);border:1px solid var(--line);font-size:1.7rem;color:var(--text)}.lib-tabs{display:flex;gap:9px;overflow-x:auto;scrollbar-width:none;padding:2px 0 18px}.lib-tabs::-webkit-scrollbar{display:none}.lib-tabs button{flex:none;padding:11px 18px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--mute);font-weight:650}.lib-tabs button.on{background:var(--acc);border-color:var(--acc);color:var(--bg)}.lib-controls{padding:4px 0 14px;color:var(--mute);font-size:.87rem}.lib-controls div{display:flex;gap:7px}.lib-controls button{padding:9px 12px;border-radius:13px;background:var(--panel);border:1px solid var(--line);color:var(--text)}
+#view.library-view .grid{gap:9px}#view.library-view .card{position:relative;grid-template-columns:68px minmax(0,1fr);grid-template-rows:1fr 1fr;min-height:86px;border-radius:20px;padding:9px 12px;background:var(--panel);border-color:transparent}#view.library-view .art{width:66px;height:66px;border-radius:15px}.lib-add-pl{position:absolute;z-index:3;right:4px;bottom:4px;width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:var(--panel);color:var(--text);box-shadow:0 2px 9px #0005;font-size:1.2rem}#view.library-view .card .n{font-size:.98rem}#view.library-view .card .u{font-size:.83rem}#view.library-view .art .lk{width:27px;height:27px}
+#view.lib-grid .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#view.lib-grid .card{display:block!important;padding:8px!important}#view.lib-grid .art{width:100%!important;height:auto!important;aspect-ratio:1!important;margin:0 0 8px!important}.lib-add-pl{right:6px;bottom:14px;width:34px;height:34px}#view.lib-grid .card .n,#view.lib-grid .card .u{align-self:auto!important}.lib-play-all{width:100%;padding:14px;margin:0 0 10px;border-radius:16px;background:var(--acc);color:var(--bg);font-weight:700}.lib-playlist-list{display:grid;gap:8px}.lib-playlist{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--line);border-radius:19px;background:var(--panel);text-align:left;width:100%}.lib-playlist-art{display:grid;place-items:center;width:58px;height:58px;border-radius:15px;background:linear-gradient(135deg,rgba(var(--accrgb),.45),var(--panel2));font-size:1.4rem;color:var(--acc)}.lib-playlist b,.lib-playlist small{display:block}.lib-playlist small{margin-top:4px;color:var(--mute)}
+.section-title{margin:24px 0 13px}.section-title h2{font-size:1.35rem;margin:0 0 4px}.section-title p{color:var(--mute);font-size:.9rem}.section-title>button{font-size:1.5rem;color:var(--mute);width:42px;height:42px;border-radius:50%;background:var(--panel)}.station-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.station-card{position:relative;min-height:245px;overflow:hidden;text-align:left;border-radius:24px;padding:0;background:var(--panel2);border:1px solid var(--line);color:var(--text)}.station-card img,.station-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.station-card:after{content:"";position:absolute;inset:25% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.88))}.station-card .station-play{position:absolute;z-index:1;left:14px;top:14px;width:40px;height:40px;display:grid;place-items:center;background:var(--panel);border-radius:14px}.station-meta{position:absolute;z-index:1;left:17px;right:13px;bottom:15px}.station-meta strong,.station-meta span{display:block}.station-meta strong{font-size:1.18rem;line-height:1.15}.station-meta span{font-size:.82rem;opacity:.86;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.station-art{display:grid;place-items:center;background:radial-gradient(circle at 80% 15%,rgba(var(--accrgb),.65),transparent 45%),linear-gradient(145deg,var(--panel2),var(--bg));font-size:3rem;color:var(--acc)}
+#myWave{min-height:210px;padding:28px 32px!important;border-radius:30px!important;margin:6px 0 32px!important;background:radial-gradient(ellipse at 75% 0%,rgba(var(--accrgb),.22),transparent 65%),var(--panel)!important;align-items:center!important}#myWave h2{font-size:2.35rem!important;letter-spacing:-.045em;margin:8px 0!important}#myWave small{font-size:.67rem;letter-spacing:.18em}#myWave p{font-size:.95rem!important}#waveStart{border-radius:999px!important;padding:14px 20px!important}#waveMood{border-radius:17px!important;padding:13px 15px!important}
+#dailyMix{margin:0 0 28px!important;padding:24px!important;border-radius:26px!important}#dailyMix .daily-head h2{font-size:1.75rem;letter-spacing:-.03em}#dailyMix .daily-content{padding-top:20px}.daily-tile{flex-basis:168px;border-radius:20px!important;padding:9px!important}.daily-tile img,.daily-cover{border-radius:15px!important}
+#dlg .srow{padding:15px 16px;margin:0 0 8px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}#dlg #setBody>h4{margin:24px 0 10px;padding:0 5px;color:var(--mute);font-size:.8rem;text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:760px){
+ header{position:relative;max-width:none;padding:14px 16px 8px;gap:10px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"title gear me" "search search search";align-items:center}
+ #mobileTitle{display:block;grid-area:title;font-size:1.28rem;font-weight:750;letter-spacing:-.035em}.logo{display:none}body:not(.search-screen) header{grid-template-areas:"title gear me";padding-bottom:13px}body:not(.search-screen) header .search{display:none}.search{grid-area:search;min-width:0;width:100%;padding:5px 5px 5px 15px;border-radius:19px;background:var(--panel)}.search input{height:38px;font-size:.96rem}.search button{padding:9px 17px}.gear{width:42px;height:42px}#gear{display:grid;grid-area:gear}#me{display:grid;grid-area:me}
+ .srcrow{display:none!important}.trend-label{margin-top:13px;padding:7px 17px 3px;color:var(--text);font-size:1rem}.chips{max-width:none;padding:5px 16px 8px;display:flex;flex-wrap:wrap;gap:8px;max-height:110px;overflow:hidden}.chips button{padding:11px 16px;border:0;background:var(--panel);color:var(--text);font-size:.88rem;font-weight:600}
+ .wrap{padding:12px 17px calc(var(--nav) + 105px + env(safe-area-inset-bottom))}.wrap>#h{display:none}.wrap:has(#view:not(:empty))>#h{display:block}.wrap>#h:empty{display:none}
+ #myWave{margin-top:7px!important;min-height:220px;padding:25px 22px!important;flex-direction:row!important;align-items:flex-end!important;position:relative;overflow:hidden}#myWave>div:first-child{position:relative;z-index:1;max-width:65%}#myWave h2{font-size:2rem!important}#myWave .waveControls{position:static;display:flex;flex-direction:column;align-items:stretch;max-width:38%;gap:9px}.waveControls select{max-width:100%;font-size:.82rem}.waveControls button{font-size:.86rem;white-space:nowrap;padding:12px 10px!important}
+ #dailyMix{padding:19px!important}.daily-head h2{font-size:1.45rem!important}.daily-tile{flex-basis:146px}.station-grid{gap:10px}.station-card{min-height:220px;border-radius:21px}.station-meta{left:13px;bottom:13px}.station-meta strong{font-size:1.02rem}.station-meta span{font-size:.75rem}
+ #libToolbar:not([hidden]){display:block}#libToolbar[hidden]{display:none}.lib-title-row>div{display:none}.lib-title-row{height:0;justify-content:flex-end}.lib-title-row>button{position:fixed;right:22px;bottom:calc(var(--nav) + 25px + env(safe-area-inset-bottom));z-index:14;width:60px;height:60px;border-radius:20px;box-shadow:0 8px 25px rgba(0,0,0,.24)}.lib-tabs{margin:0 -17px;padding:2px 17px 18px}.lib-controls{font-size:.81rem}.lib-controls button{font-size:.77rem;padding:9px}.lib-playlist{padding:11px;border-radius:18px}#view.library-view .grid{grid-template-columns:1fr}.wrap:has(#libToolbar:not([hidden]))>#h{display:none}body:has(#myWave:not([hidden])) #view,body:has(#myWave:not([hidden])) .wrap>#h{display:none}
+ nav{background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(22px) saturate(1.4);border-top:1px solid var(--line);padding:8px 5px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -10px 35px rgba(0,0,0,.12)}nav button{font-size:.64rem;gap:4px;padding:7px 1px 6px;border:0!important;color:var(--mute)}nav button .i{width:22px;height:22px}nav button.on{background:transparent;color:var(--text)}nav button.on .i{filter:drop-shadow(0 0 7px rgba(var(--accrgb),.55))}nav button span{white-space:nowrap}
+ #dlg[open]{position:fixed;inset:0;margin:0;width:100%;max-width:none;max-height:100dvh;height:100dvh;border-radius:0;padding:calc(20px + env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));overflow:auto}#dlg #setBody>.srow{border-radius:18px}
+}
+@media(max-width:390px){.station-card{min-height:192px}.station-grid{gap:8px}#myWave{padding:21px 16px!important}#myWave>div:first-child{max-width:62%}#myWave .waveControls{max-width:42%}}
+`;
+  document.head.appendChild(polish);
+  let libTab='all',libArtist='',libPlaylist=null,libGrid=false;
+  const tabDefs=[['all','Все'],['playlists','Плейлисты'],['artists','Артисты'],['albums','Альбомы'],['downloads','Скачанные']];
+  function makeTabs(){const host=libToolbar.querySelector('.lib-tabs');host.replaceChildren();tabDefs.forEach(([key,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.classList.toggle('on',key===libTab);b.setAttribute('role','tab');b.setAttribute('aria-selected',String(key===libTab));b.onclick=()=>{libTab=key;libPlaylist=null;libArtist='';makeTabs();renderLib()};host.appendChild(b)})}
+  function setMobileTitle(){if(!mobileTitle)return;document.body.classList.toggle('search-screen',mode==='home'&&(navFocus==='search'||!!home.q));const value=mode==='lib'?'Медиатека':mode==='fr'?'Сообщество':mode==='adm'?'Владелец':mode==='dl'?'Загрузки':mode==='home'?(navFocus==='search'?'Поиск':navFocus==='wave'?'Волна':'Главная'):'LINNmusic';mobileTitle.textContent=value;}
+  function appendEmpty(parent,title,desc){const box=document.createElement('div');box.className='msg';const b=document.createElement('b');b.textContent=title;const p=document.createElement('p');p.textContent=desc;box.append(b,p);parent.replaceChildren(box)}
+  async function renderPlaylists(){const host=$('view');host.replaceChildren();host.classList.add('library-view');if(!ME||!TOKEN){appendEmpty(host,'Войди в аккаунт','Плейлисты синхронизируются с твоим профилем LINNmusic.');return}try{const data=await api('/api/playlists');if(mode!=='lib'||libTab!=='playlists')return;const rows=[...(data.mine||[]),...(data.shared||[])];if(!rows.length){appendEmpty(host,'Пока нет плейлистов','Создай первый плейлист кнопкой ＋.');return}const listEl=document.createElement('div');listEl.className='lib-playlist-list';rows.forEach(p=>{const b=document.createElement('button');b.type='button';b.className='lib-playlist';const art=document.createElement('span');art.className='lib-playlist-art';art.textContent='♫';const txt=document.createElement('span');const strong=document.createElement('b');strong.textContent=p.title||'Плейлист';const small=document.createElement('small');small.textContent=(p.tracks?.length||0)+' треков · '+(p.vis==='public'?'открытый':'личный');txt.append(strong,small);b.append(art,txt);b.onclick=()=>openPlaylist(p.id);listEl.appendChild(b)});host.appendChild(listEl)}catch(e){appendEmpty(host,'Не удалось загрузить плейлисты','Проверь подключение к серверу LINNmusic.')}}
+  async function openPlaylist(id){try{const p=await api('/api/playlists/'+encodeURIComponent(id));if(mode!=='lib')return;libPlaylist=p;libTab='playlists';makeTabs();const tracks=(p.tracks||[]).map(x=>x.track||x).filter(isPlayableTrack);list=tracks;$('libCaption').textContent=p.title||'Плейлист';$('view').classList.add('library-view');if(!tracks.length){appendEmpty($('view'),'Плейлист пуст','Добавь треки из коллекции кнопкой ＋ на обложке.');return}draw('');const playAll=document.createElement('button');playAll.type='button';playAll.textContent='▶　Слушать плейлист';playAll.className='lib-play-all';playAll.onclick=()=>play(tracks,0);$('view').prepend(playAll)}catch(e){toast('Не удалось открыть плейлист')}}
+  async function renderLib(){if(mode!=='lib')return;libToolbar.hidden=false;$('libCaption').textContent=libArtist?'Исполнитель · '+libArtist:libPlaylist?(libPlaylist.title||'Плейлист'):'Ваша библиотека';$('h').textContent='';if(libTab==='downloads'){$('libToolbar').hidden=true;$('tDl').click();return}if(libTab==='playlists'){await renderPlaylists();return}if(libTab==='artists'){const artists=[...new Set(sortedLib().map(t=>t.user).filter(Boolean))].sort((a,b)=>a.localeCompare(b));if(libArtist){list=sortedLib().filter(t=>t.user===libArtist);draw('У этого исполнителя пока нет сохранённых треков.');return}const host=$('view');host.replaceChildren();if(!artists.length){appendEmpty(host,'Исполнителей пока нет','Сохрани любимые треки, чтобы собрать медиатеку.');return}const g=document.createElement('div');g.className='lib-playlist-list';artists.forEach(name=>{const b=document.createElement('button');b.className='lib-playlist';b.type='button';const art=document.createElement('span');art.className='lib-playlist-art';art.textContent='◉';const t=document.createElement('span');const n=document.createElement('b');n.textContent=name;const sub=document.createElement('small');sub.textContent=sortedLib().filter(x=>x.user===name).length+' треков';t.append(n,sub);b.append(art,t);b.onclick=()=>{libArtist=name;$('libCaption').textContent='Исполнитель · '+name;renderLib()};g.appendChild(b)});host.appendChild(g);return}if(libTab==='albums'){const albums=sortedLib().filter(t=>t.album);if(!albums.length){appendEmpty($('view'),'Альбомы не указаны','В текущих треках нет данных об альбомах.');return}list=albums;draw('');return}list=sortedLib();draw('Тут пока пусто. Нажми на сердечко на обложке, и трек появится здесь.')}
+  function enterLibrary(){mode='lib';navFocus='';libTab='all';libArtist='';libPlaylist=null;libToolbar.hidden=false;setNav();makeTabs();renderLib();window.scrollTo({top:0,behavior:P.anim?'smooth':'auto'})}
+  $('tLib').onclick=enterLibrary;
+  $('libCreate').onclick=async()=>{if(!ME||!TOKEN){toast('Войди в аккаунт, чтобы создавать плейлисты');return}const title=prompt('Название плейлиста');if(!title||!title.trim())return;try{await api('/api/playlists/create',{title:title.trim(),desc:'',vis:'private'});libTab='playlists';makeTabs();await renderLib();toast('Плейлист создан',true)}catch(e){toast(e.message||'Не удалось создать плейлист')}};
+  $('libSort').onclick=()=>{const sorts=['new','old','title','artist'],labels=['Сначала новые','Сначала старые','По названию','По исполнителю'];const i=sorts.indexOf(P.sort);P.sort=sorts[(i+1)%sorts.length];savePrefs();$('libSort').textContent='↕ '+labels[(i+1)%sorts.length];renderLib()};
+  $('libLayout').onclick=()=>{libGrid=!libGrid;$('view').classList.toggle('lib-grid',libGrid);$('libLayout').textContent=libGrid?'☷':'▦'};
+  const oldSetNav=setNav;setNav=function(){oldSetNav.apply(this,arguments);setMobileTitle();libToolbar.hidden=mode!=='lib';stationSection.hidden=!(mode==='home'&&!home.q&&navFocus!=='search'&&navFocus!=='wave');if(quickActions)quickActions.hidden=!(mode==='home'&&!home.q&&navFocus==='discover')};
+  function renderStations(){const grid=$('stationGrid');if(!grid)return;grid.replaceChildren();const seeds=dailyTracks.slice(0,2);const specs=[['Радио по треку',seeds[0]],['Радио по артисту',seeds.find(x=>x.user)||seeds[1]]];specs.forEach(([label,track],idx)=>{const b=document.createElement('button');b.type='button';b.className='station-card';if(track?.thumb){const img=document.createElement('img');img.loading='lazy';img.alt='';img.src=track.thumb;b.appendChild(img)}else{const art=document.createElement('span');art.className='station-art';art.textContent='♫';b.appendChild(art)}const icon=document.createElement('span');icon.className='station-play';icon.textContent='▶';const meta=document.createElement('span');meta.className='station-meta';const title=document.createElement('strong');title.textContent=label;const sub=document.createElement('span');sub.textContent=track?(idx===0?track.title:track.user):'Любимые находки LINNmusic';meta.append(title,sub);b.append(icon,meta);b.onclick=async()=>{const q=track?(idx===0?track.title:track.user):'новая музыка';b.disabled=true;try{const rows=await searchTracks(q,'lin');if(rows.length)play(rows,0);else toast('Станция пока не нашла треки')}catch(e){toast('Станция временно недоступна')}finally{b.disabled=false}};grid.appendChild(b)})}
+  $('stationRefresh').onclick=()=>{renderStations();toast('Станции обновлены',true)};
+  const dailyRenderBase=dailyRender;dailyRender=function(rows){dailyRenderBase(rows);renderStations()};
+  const dailyLoad=loadDaily;
+  const baseDraw=draw;draw=function(emptyMsg){if(mode!=='lib')libToolbar.hidden=true;const out=baseDraw(emptyMsg);if(mode==='lib'&&['all','artists','albums'].includes(libTab)){$$('#view.library-view .card').forEach((card,i)=>{const track=list[i];if(!track||card.querySelector('.lib-add-pl'))return;const b=document.createElement('button');b.type='button';b.className='lib-add-pl';b.title='Добавить в плейлист';b.setAttribute('aria-label','Добавить '+(track.title||'трек')+' в плейлист');b.textContent='＋';b.onclick=async e=>{e.stopPropagation();try{const data=await api('/api/playlists');const mine=data.mine||[];if(!mine.length){toast('Сначала создай плейлист кнопкой ＋');return}const choice=prompt('В какой плейлист добавить? Введи номер:\n'+mine.map((p,n)=>(n+1)+'. '+p.title).join('\n'));if(choice===null)return;const p=mine[Number(choice)-1];if(!p){toast('Такого номера нет');return}await api('/api/playlists/'+encodeURIComponent(p.id)+'/add',{track});toast('Добавлено в «'+p.title+'»',true)}catch(err){toast(err.message||'Не удалось добавить трек')}};card.querySelector('.art')?.appendChild(b)})}return out};
+  makeTabs();setNav();renderStations();
+})();
+</script>
+
+<script>
+/* SoundCloud discovery: public profiles, public playlists and scoped search controls. */
+(function(){
+ const optKey='linn-sc-search-options';
+ let opts={kind:'tracks',source:'lin',...ls.get(optKey,{})};
+ let scCurrentProfile=null,scPreviousQuery='',savedOptions={...opts},optionsCommitted=false;
+ const searchForm=$('sf'),filterButton=document.createElement('button');
+ filterButton.type='button';filterButton.id='searchFilters';filterButton.title='Настройки поиска';filterButton.setAttribute('aria-label','Настройки поиска');filterButton.innerHTML=ic('sliders');
+ $('q').insertAdjacentElement('afterend',filterButton);
+ const dlg=document.createElement('dialog');dlg.id='searchOptions';dlg.innerHTML='<div class="search-options-head"><div><small>ПОИСК LINNMUSIC</small><h2>Что ищем?</h2></div><button type="button" data-close aria-label="Закрыть">×</button></div><div class="search-opt-group"><label>Тип результата</label><div class="search-opt-grid" id="searchKinds"></div></div><div class="search-opt-group"><label>Источник музыки</label><div class="search-opt-grid" id="searchSources"></div><p id="searchSourceHint"></p></div><div class="search-options-footer"><button type="button" id="searchOptCancel">Отмена</button><button type="button" id="searchOptApply">Показать результаты</button></div>';
+ document.body.appendChild(dlg);
+ const style=document.createElement('style');style.textContent=`
+ #searchFilters{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--text);margin-right:3px}#searchFilters .i{width:19px;height:19px}
+ #searchOptions{width:min(520px,calc(100% - 28px));padding:25px;border:1px solid var(--line);border-radius:25px;background:var(--bg);color:var(--text);box-shadow:0 24px 80px #0007}#searchOptions::backdrop{background:#05040bc9;backdrop-filter:blur(8px)}.search-options-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}.search-options-head small{font-size:.66rem;letter-spacing:.14em;color:var(--acc)}.search-options-head h2{font-size:1.6rem;margin:5px 0}.search-options-head [data-close]{width:36px;height:36px;border-radius:50%;background:var(--panel2);font-size:1.5rem}.search-opt-group{margin:0 0 20px}.search-opt-group>label{display:block;margin-bottom:9px;color:var(--mute);font-size:.86rem}.search-opt-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.search-opt-grid button{min-height:67px;padding:11px 8px;border:1px solid var(--line);border-radius:15px;background:var(--panel);font-weight:650}.search-opt-grid button small{display:block;margin-top:4px;color:var(--mute);font-size:.69rem;font-weight:400}.search-opt-grid button.on{background:rgba(var(--accrgb),.17);border-color:var(--acc);box-shadow:inset 0 0 0 1px rgba(var(--accrgb),.2)}#searchSourceHint{margin-top:9px;color:var(--mute);font-size:.78rem;line-height:1.4}.search-options-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}.search-options-footer button{padding:11px 16px;border-radius:14px;background:var(--panel2);border:1px solid var(--line)}#searchOptApply{background:var(--acc);color:var(--bg);font-weight:750}
+ #sf{align-items:center}#q{order:0}#searchFilters{order:1}#sf>button[type=submit]{order:2}
+ .sc-results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}.sc-entity{display:flex;align-items:center;gap:13px;min-width:0;padding:13px;border-radius:19px;background:var(--panel);border:1px solid var(--line);color:var(--text);text-align:left}.sc-entity-main{min-width:0;flex:1}.sc-entity strong,.sc-entity small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sc-entity small{margin-top:5px;color:var(--mute);font-size:.8rem}.sc-entity-art{width:61px;height:61px;flex:none;object-fit:cover;border-radius:16px;background:linear-gradient(145deg,rgba(var(--accrgb),.35),var(--panel2));display:grid;place-items:center;color:var(--acc);font-size:1.4rem}.sc-entity-art.user{border-radius:50%}.sc-kicker{display:inline-flex;margin:0 0 11px;padding:6px 10px;border-radius:999px;background:var(--panel2);color:var(--mute);font-size:.72rem;letter-spacing:.07em}
+ .sc-profile-head,.sc-playlist-head{position:relative;display:flex;align-items:center;gap:16px;margin:4px 0 16px;padding:18px;border-radius:22px;border:1px solid var(--line);background:radial-gradient(ellipse at 90% 0%,rgba(var(--accrgb),.22),transparent 55%),var(--panel)}.sc-profile-head img,.sc-playlist-head img,.sc-profile-placeholder{width:88px;height:88px;flex:none;object-fit:cover;border-radius:22px;background:var(--panel2)}.sc-profile-head img{border-radius:50%}.sc-profile-placeholder{display:grid;place-items:center;font-size:2rem;color:var(--acc)}.sc-profile-copy{min-width:0;flex:1}.sc-profile-copy h2{font-size:1.35rem;margin:0 0 5px}.sc-profile-copy p{color:var(--mute);font-size:.84rem;line-height:1.45;max-height:4.2em;overflow:hidden}.sc-profile-stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px;color:var(--mute);font-size:.76rem}.sc-profile-head>a,.sc-playlist-head>a{color:var(--acc);font-weight:700;font-size:.8rem;white-space:nowrap}.sc-return{padding:9px 12px;margin-bottom:12px;border-radius:13px;background:var(--panel2);color:var(--text)}.sc-tabs{display:flex;gap:7px;overflow:auto;margin-bottom:14px;padding:2px 0 8px;scrollbar-width:none}.sc-tabs button{flex:none;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute)}.sc-tabs button.on{background:var(--acc);color:var(--bg);border-color:var(--acc);font-weight:700}.sc-play-play{padding:10px 15px;border-radius:999px;background:var(--acc);color:var(--bg);font-weight:750}.sc-description{color:var(--mute);font-size:.86rem;line-height:1.5;margin:7px 0 12px}
+ @media(max-width:760px){#sf{padding-left:12px;gap:1px}#searchFilters{width:37px;height:37px;margin-right:0}#searchOptions{width:100%;max-width:none;margin:auto 0 0;border-radius:25px 25px 0 0;padding:24px 18px calc(20px + env(safe-area-inset-bottom));max-height:90dvh}.search-opt-grid{gap:6px}.search-opt-grid button{font-size:.83rem;min-height:64px;padding:9px 5px}.search-options-footer button{flex:1}.sc-results-grid{grid-template-columns:1fr;gap:8px}.sc-profile-head,.sc-playlist-head{align-items:flex-start;flex-wrap:wrap;padding:15px}.sc-profile-head img,.sc-playlist-head img,.sc-profile-placeholder{width:72px;height:72px}.sc-profile-copy{width:calc(100% - 90px);flex:none}.sc-profile-head>a,.sc-playlist-head>a{margin-left:87px}.sc-profile-head>a{position:absolute;right:14px;bottom:18px;margin:0}.sc-profile-copy p{max-height:3em}}
+ `;document.head.appendChild(style);
+ const kinds=[['tracks','Музыка','Треки'],['profiles','Профили','Люди'],['playlists','Плейлисты','Сборники']];
+ const sources=[['lin','LINNmusic','Audius + SC'],['sc','SoundCloud','Только SC'],['au','Audius','Только Audius']];
+ function drawOptions(){const kg=$('searchKinds'),sg=$('searchSources');kg.replaceChildren();sg.replaceChildren();kinds.forEach(([key,label,sub])=>{const b=document.createElement('button');b.type='button';b.classList.toggle('on',opts.kind===key);b.innerHTML='<span></span><small></small>';b.querySelector('span').textContent=label;b.querySelector('small').textContent=sub;b.onclick=()=>{opts.kind=key;drawOptions()};kg.appendChild(b)});sources.forEach(([key,label,sub])=>{const b=document.createElement('button');b.type='button';b.classList.toggle('on',opts.source===key);b.innerHTML='<span></span><small></small>';b.querySelector('span').textContent=label;b.querySelector('small').textContent=sub;b.onclick=()=>{opts.source=key;drawOptions()};sg.appendChild(b)});$('searchSourceHint').textContent=opts.kind==='tracks'?'Источник определяет, из каких каталогов придут треки.':'Публичные профили, пользовательские плейлисты и лайки загружаются из SoundCloud.'}
+ filterButton.onclick=()=>{savedOptions={...opts};optionsCommitted=false;drawOptions();dlg.showModal()};dlg.querySelector('[data-close]').onclick=()=>dlg.close();$('searchOptCancel').onclick=()=>dlg.close();dlg.addEventListener('close',()=>{if(!optionsCommitted){opts={...savedOptions};drawOptions()}optionsCommitted=false});
+ $('searchOptApply').onclick=()=>{ls.set(optKey,opts);optionsCommitted=true;dlg.close();if(home.q&&mode==='home')run(home.q)};
+ function counts(n){return new Intl.NumberFormat('ru-RU').format(Number(n)||0)}
+ function externalLink(url,label){const a=document.createElement('a');a.href=url||'https://soundcloud.com';a.target='_blank';a.rel='noopener noreferrer';a.textContent=label;a.onclick=e=>e.stopPropagation();return a}
+ function entityCard(item,type){const b=document.createElement('button');b.type='button';b.className='sc-entity';const art=document.createElement(item.avatar||item.thumb?'img':'span');art.className='sc-entity-art'+(type==='profiles'?' user':'');if(art.tagName==='IMG'){art.loading='lazy';art.alt='';art.src=item.avatar||item.thumb}else art.textContent=type==='profiles'?'◉':'♫';const txt=document.createElement('span');txt.className='sc-entity-main';const name=document.createElement('strong');name.textContent=item.username||item.title||'SoundCloud';const sub=document.createElement('small');sub.textContent=type==='profiles'?(counts(item.followers)+' подписчиков · '+counts(item.tracks)+' треков'):(item.user+' · '+counts(item.track_count)+' треков · '+counts(item.likes)+' лайков');txt.append(name,sub);const arrow=document.createElement('span');arrow.textContent='›';arrow.style.cssText='font-size:1.5rem;color:var(--mute)';b.append(art,txt,arrow);b.onclick=()=>type==='profiles'?openScUser(item.id,'tracks'):openScPlaylist(item.id);return b}
+ function entityResults(rows,type,q){const host=$('view');host.replaceChildren();host.className='sc-results-grid';const label=document.createElement('div');label.className='sc-kicker';label.textContent=type==='profiles'?'ПРОФИЛИ SOUNDCLOUD':'ПЛЕЙЛИСТЫ SOUNDCLOUD';host.appendChild(label);if(!rows.length){const p=document.createElement('p');p.className='msg';p.textContent='Ничего не нашлось. Попробуй другой запрос.';host.appendChild(p);return}rows.forEach(x=>host.appendChild(entityCard(x,type)))}
+ function scRoute(path){return api(path+(path.includes('?')?'&':'?')+'t='+enc(TOKEN))}
+ function trackPanelTracks(rows,empty){list=rows||[];$('view').className='';draw(empty)}
+ function scBack(){if(scPreviousQuery){run(scPreviousQuery);return}mode='home';navFocus='search';setNav();$('h').textContent='Поиск SoundCloud';$('view').textContent='Введи имя или название в строке поиска.'}
+ function profileHeader(user){const box=document.createElement('section');box.className='sc-profile-head';if(user.avatar){const im=document.createElement('img');im.src=user.avatar;im.alt='';im.loading='lazy';box.appendChild(im)}else{const ph=document.createElement('span');ph.className='sc-profile-placeholder';ph.textContent='◉';box.appendChild(ph)}const c=document.createElement('div');c.className='sc-profile-copy';const h=document.createElement('h2');h.textContent=user.username||'SoundCloud';const p=document.createElement('p');p.textContent=user.description||'Публичный профиль SoundCloud';const stats=document.createElement('div');stats.className='sc-profile-stats';stats.textContent=counts(user.followers)+' подписчиков · '+counts(user.tracks)+' треков · '+counts(user.playlists)+' плейлистов';c.append(h,p,stats);box.append(c,externalLink(user.url,'SoundCloud ↗'));return box}
+ function addScTabs(active,user){const tabs=document.createElement('div');tabs.className='sc-tabs';[['tracks','Треки'],['playlists','Плейлисты'],['likes','Лайки'],['reposts','Репосты']].forEach(([key,label])=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.classList.toggle('on',key===active);b.onclick=()=>openScUser(user.id,key);tabs.appendChild(b)});return tabs}
+ async function openScUser(id,tab='tracks'){
+   const req=++searchToken;mode='home';navFocus='search';setNav();$('h').textContent='Профиль SoundCloud';$('view').className='';$('view').textContent='Загружаю профиль и музыку…';
+   try{const data=await scRoute('/sc/user/'+encodeURIComponent(id)+'?tab='+enc(tab));if(req!==searchToken)return;scCurrentProfile=data.user;$('mobileTitle').textContent=data.user.username||'Профиль';trackPanelTracks(data.tab==='playlists'?[]:data.items,data.tab==='playlists'?'Плейлистов пока нет.':'Пока нет публичных треков.');const host=$('view');const back=document.createElement('button');back.type='button';back.className='sc-return';back.textContent='‹ Назад к поиску';back.onclick=scBack;host.prepend(addScTabs(tab,data.user));host.prepend(profileHeader(data.user));host.prepend(back);if(data.tab==='playlists'){host.querySelector('.msg')?.remove();const grid=document.createElement('div');grid.className='sc-results-grid';(data.items||[]).forEach(p=>grid.appendChild(entityCard(p,'playlists')));if(!data.items?.length){const p=document.createElement('p');p.className='msg';p.textContent='У пользователя нет публичных плейлистов.';grid.appendChild(p)}host.appendChild(grid)}}catch(e){if(req!==searchToken)return;$('view').textContent=e.message||'Профиль SoundCloud недоступен.'}
+ }
+ async function openScPlaylist(id){
+   const req=++searchToken;mode='home';navFocus='search';setNav();$('h').textContent='Плейлист SoundCloud';$('view').className='';$('view').textContent='Загружаю плейлист…';
+   try{const data=await scRoute('/sc/playlist/'+encodeURIComponent(id));if(req!==searchToken)return;const tracks=data.tracks||[];trackPanelTracks(tracks,'В этом плейлисте нет доступных треков.');const host=$('view'),p=data.playlist||{},head=document.createElement('section');head.className='sc-playlist-head';if(p.thumb){const im=document.createElement('img');im.src=p.thumb;im.alt='';im.loading='lazy';head.appendChild(im)}else{const art=document.createElement('span');art.className='sc-profile-placeholder';art.textContent='♫';head.appendChild(art)}const c=document.createElement('div');c.className='sc-profile-copy';const h=document.createElement('h2');h.textContent=p.title||'Плейлист';const d=document.createElement('p');d.className='sc-description';d.textContent=p.description||p.user||'Плейлист SoundCloud';const playBtn=document.createElement('button');playBtn.type='button';playBtn.className='sc-play-play';playBtn.textContent='▶ Слушать';playBtn.disabled=!tracks.length;playBtn.onclick=()=>play(tracks,0);const meta=document.createElement('div');meta.className='sc-profile-stats';meta.textContent=(p.user||'SoundCloud')+' · '+counts(p.track_count)+' треков · '+counts(p.likes)+' лайков';c.append(h,d,meta,playBtn);head.append(c,externalLink(p.url,'Открыть ↗'));const back=document.createElement('button');back.type='button';back.className='sc-return';back.textContent='‹ Назад к поиску';back.onclick=scBack;host.prepend(head);host.prepend(back);$('mobileTitle').textContent=p.title||'Плейлист'}catch(e){if(req!==searchToken)return;$('view').textContent=e.message||'Плейлист SoundCloud недоступен.'}
+ }
+ const baseRun=run;
+ run=async function(query){
+   const q=String(query||'').trim();if(!q)return;
+   scPreviousQuery=q;
+   if(P.hist){ls.set('hist',[q,...ls.get('hist',[]).filter(x=>x!==q)].slice(0,8));drawChips()}
+   mode='home';navFocus='search';home.q=q;setNav();$('h').textContent=(opts.kind==='tracks'?'Результаты: ':'SoundCloud · ')+(opts.kind==='profiles'?'Профили':opts.kind==='playlists'?'Плейлисты':'')+(opts.kind==='tracks'?q:'«'+q+'»');
+   if(opts.kind==='tracks'){
+     if(opts.source==='lin')return baseRun(q);
+     const req=++searchToken;$('view').textContent='Ищу треки…';try{const rows=await searchTracks(q,opts.source);if(req!==searchToken||mode!=='home')return;list=rows;home={q,list};draw(rows.length?'':'Ничего не нашлось. Попробуй другой запрос.')}catch(e){if(req===searchToken)$('view').textContent='Поиск не ответил. '+(e.message||'Проверь соединение.')}return;
+   }
+   const req=++searchToken;$('view').className='';$('view').textContent='Ищу '+(opts.kind==='profiles'?'профили':'плейлисты')+' SoundCloud…';
+   try{const rows=await scRoute('/sc/search?kind='+enc(opts.kind==='profiles'?'users':'playlists')+'&q='+enc(q));if(req!==searchToken||mode!=='home')return;home={q,list:[]};entityResults(rows,opts.kind,q)}catch(e){if(req===searchToken)$('view').textContent=e.message||'SoundCloud сейчас не ответил.'}
+ };
+ drawOptions();
+})();
+</script>
+
 </body>
 </html>
